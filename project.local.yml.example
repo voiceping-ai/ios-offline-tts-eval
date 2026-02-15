@@ -1,0 +1,11 @@
+include:
+  - project.yml
+
+targets:
+  TTSEval:
+    settings:
+      base:
+        # Use your own bundle id prefix to avoid clashing with production IDs.
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.voiceping.ttseval
+        DEVELOPMENT_TEAM: ABCDE12345
+

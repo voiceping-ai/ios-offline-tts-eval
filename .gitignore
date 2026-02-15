@@ -1,0 +1,25 @@
+.DS_Store
+
+# Local XcodeGen overrides (signing, bundle ids)
+project.local.yml
+
+# Xcode
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.xccheckout
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+
+# XcodeGen output (regeneratable via `xcodegen generate`)
+TTSEval.xcodeproj/project.pbxproj
+TTSEval.xcodeproj/xcshareddata/
+
+# Benchmark exports pulled from device (can be large/noisy)
+device-exports/
+
+# Python
+__pycache__/
+*.pyc

@@ -1,0 +1,20 @@
+{
+  "short": [
+    "Hello. This is a quick TTS test.",
+    "The price is $19.99.",
+    "I can speak offline, on device.",
+    "In 2026, on-device AI is everywhere."
+  ],
+  "medium": [
+    "Today is Sunday. The meeting starts at 9:30 a.m., not 9:00. Please be on time.",
+    "Dr. Smith said: 'Measure latency, memory, and stability.' Then we ran three benchmarks.",
+    "For iOS performance testing, avoid the simulator. Use physical devices for reliable results.",
+    "A short list: one, two, three. A longer list: four, five, six, seven, eight."
+  ],
+  "long": [
+    "This is a longer paragraph to evaluate text to speech prosody, pacing, and clarity. It includes numbers like 1,234 and 56.78, abbreviations such as e.g. and i.e., and a question: can the voice stay natural throughout the sentence?",
+    "When benchmarking an offline TTS model, we care about real time factor, CPU usage, memory footprint, and tokens per second. We also care about stability: no crashes, no glitches, and consistent output across runs.",
+    "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Sphinx of black quartz, judge my vow. These classic pangrams stress different phoneme combinations.",
+    "A final stress test mixes punctuation, quotes, and dashes: 'Wait,' she said, 'are you sure?' He replied, 'Yes... but let's verify.' After that, they compared results and exported a CSV."
+  ]
+}

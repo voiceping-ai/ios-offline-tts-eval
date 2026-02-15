@@ -1,0 +1,36 @@
+VoicePing TTS Eval
+Copyright 2026 VoicePing
+
+This product includes software components from third-party projects.
+Those components are licensed under their respective original licenses.
+
+================================================================================
+BUNDLED LIBRARIES (compiled into the application)
+================================================================================
+
+sherpa-onnx
+  License: Apache License 2.0
+  Source:  https://github.com/k2-fsa/sherpa-onnx
+
+ONNX Runtime
+  License: MIT
+  Source:  https://github.com/microsoft/onnxruntime
+
+================================================================================
+MODELS (downloaded at runtime, NOT distributed with this application)
+================================================================================
+
+This app downloads TTS model files at runtime from Hugging Face. Model licenses vary.
+The model repo IDs are defined in:
+
+  TTSEval/Services/TTSModelCatalog.swift
+
+Examples:
+  - csukuangfj/kokoro-int8-multi-lang-v1_0
+  - csukuangfj/vits-ljs
+  - csukuangfj/matcha-icefall-en_US-ljspeech
+  - k2-fsa/sherpa-onnx-models
+  - csukuangfj/kitten-nano-en-v0_1-fp16
+
+AVSpeechSynthesizer uses iOS system voices and does not download model files.
+
