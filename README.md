@@ -49,11 +49,11 @@ Run the full benchmark on the device and pull exported JSON/CSV into `device-exp
 
 ```bash
 IOS_COREDEVICE_ID=<CoreDevice ID> IOS_DEVICE_UDID=<UDID> \
-  TTSEVAL_DATASET=all TTSEVAL_PROMPT_LIMIT=0 \
+  TTSEVAL_LANG=en TTSEVAL_DATASET=all TTSEVAL_PROMPT_LIMIT=0 \
   ./scripts/test-all-device.sh
 ```
 
-Update README benchmark tables + regenerate the SVG graph from the latest `device-exports/**/results-*.json`:
+Update README benchmark tables + regenerate SVG graphs from the latest `device-exports/**/results-*.json`:
 
 ```bash
 python3 scripts/generate-benchmark-report.py --update-readme
@@ -67,14 +67,18 @@ python3 scripts/generate-benchmark-report.py --update-readme
 - Started: `2026-02-15T13:36:15Z`
 
 ![iOS TTS Overall Score](docs/ios_tts_overall_score.svg)
+![iOS TTS Tok/s](docs/ios_tts_tok_per_sec.svg)
+![iOS TTS RTF](docs/ios_tts_rtf.svg)
+![iOS TTS CPU Avg](docs/ios_tts_cpu_avg.svg)
+![iOS TTS Mem Max](docs/ios_tts_mem_max.svg)
 
-| Model | Engine | Prompts | Overall | Speed | Tok/s Score | Resource | Median RTF | Median Tok/s | Median CPU | Median Mem (MB) |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| AVSpeech (System) | `native.avspeech` | 12 | 100.00 | - | 100.00 | 100.00 | - | 147.48 | 64.00 | 20.52 |
-| Matcha (en_US LJSpeech) + Vocos | `sherpa.offline` | 12 | 89.83 | 96.66 | 100.00 | 57.52 | 0.050 | 40.90 | 397.24 | 1151.48 |
-| Kitten Nano (en v0.1 fp16) | `sherpa.offline` | 12 | 61.82 | 81.98 | 20.37 | 73.57 | 0.270 | 8.33 | 271.52 | 1291.28 |
-| Kokoro Int8 (Multi-lang v1.0) | `sherpa.offline` | 12 | 25.66 | 8.78 | 4.54 | 99.56 | 1.368 | 1.86 | 239.57 | 564.79 |
-| VITS LJS (Int8) | `sherpa.offline` | 12 | 21.14 | 0.00 | 3.81 | 100.00 | 1.572 | 1.56 | 211.41 | 833.34 |
+| Model | Engine | Prompts | Model Load (ms) | Overall | Speed | Tok/s Score | Resource | Median RTF | Median Tok/s | Median CPU | Median Mem (MB) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| AVSpeech (System) | `native.avspeech` | 12 | - | 100.00 | - | 100.00 | 100.00 | - | 147.48 | 64.00 | 20.52 |
+| Matcha (en_US LJSpeech) + Vocos | `sherpa.offline` | 12 | - | 89.83 | 96.66 | 100.00 | 57.52 | 0.050 | 40.90 | 397.24 | 1151.48 |
+| Kitten Nano (en v0.1 fp16) | `sherpa.offline` | 12 | - | 61.82 | 81.98 | 20.37 | 73.57 | 0.270 | 8.33 | 271.52 | 1291.28 |
+| Kokoro Int8 (Multi-lang v1.0) | `sherpa.offline` | 12 | - | 25.66 | 8.78 | 4.54 | 99.56 | 1.368 | 1.86 | 239.57 | 564.79 |
+| VITS LJS (Int8) | `sherpa.offline` | 12 | - | 21.14 | 0.00 | 3.81 | 100.00 | 1.572 | 1.56 | 211.41 | 833.34 |
 <!-- BENCHMARK_RESULTS_END -->
 
 ## Notes

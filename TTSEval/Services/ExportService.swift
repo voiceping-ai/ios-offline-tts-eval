@@ -85,7 +85,7 @@ enum ExportService {
     private static func summaryCSVString(summaries: [ModelSummary], dataset: String, device: DeviceInfo) -> String {
         var out: [String] = []
         out.append("# dataset=\(dataset), device=\(device.deviceModel), iOS=\(device.systemVersion)")
-        out.append("model_id,model_name,engine_id,prompt_count,overall_score,speed_score,throughput_score,resource_score,median_rtf,median_tps,median_cpu_avg,median_mem_max_mb")
+        out.append("model_id,model_name,engine_id,prompt_count,model_load_ms,overall_score,speed_score,throughput_score,resource_score,median_rtf,median_tps,median_cpu_avg,median_mem_max_mb")
 
         for s in summaries {
             let sc = s.score
@@ -94,6 +94,7 @@ enum ExportService {
                 s.modelDisplayName,
                 s.engineId,
                 String(s.promptCount),
+                s.modelLoadMs.map(format) ?? "",
                 format(sc.overallScore0to100),
                 sc.speedScore.map(format) ?? "",
                 format(sc.throughputScore),

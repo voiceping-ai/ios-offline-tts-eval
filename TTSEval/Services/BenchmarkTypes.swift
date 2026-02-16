@@ -36,6 +36,7 @@ struct ModelSummary: Codable, Hashable, Sendable {
     let modelDisplayName: String
     let engineId: String
     let promptCount: Int
+    let modelLoadMs: Double?
     let score: TTSEvalScore
 }
 

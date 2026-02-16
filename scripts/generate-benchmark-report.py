@@ -36,6 +36,7 @@ class SummaryRow:
     model_name: str
     engine_id: str
     prompt_count: int
+    model_load_ms: Optional[float]
     score: Score
 
 
@@ -70,6 +71,7 @@ def load_export(path: Path) -> Export:
     summaries: list[SummaryRow] = []
     for s in data.get("summaries") or []:
         score_raw = s.get("score") or {}
+        model_load_ms = _parse_float(s.get("modelLoadMs"))
         score = Score(
             overall=float(score_raw.get("overallScore0to100") or 0.0),
             speed=_parse_float(score_raw.get("speedScore")),
@@ -86,6 +88,7 @@ def load_export(path: Path) -> Export:
                 model_name=str(s.get("modelDisplayName") or ""),
                 engine_id=str(s.get("engineId") or ""),
                 prompt_count=int(s.get("promptCount") or 0),
+                model_load_ms=model_load_ms,
                 score=score,
             )
         )
@@ -131,8 +134,8 @@ def markdown_table(export: Export) -> str:
     rows = sorted(export.summaries, key=lambda r: r.score.overall, reverse=True)
 
     header = [
-        "| Model | Engine | Prompts | Overall | Speed | Tok/s Score | Resource | Median RTF | Median Tok/s | Median CPU | Median Mem (MB) |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Model | Engine | Prompts | Model Load (ms) | Overall | Speed | Tok/s Score | Resource | Median RTF | Median Tok/s | Median CPU | Median Mem (MB) |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
 
     body = []
@@ -145,6 +148,7 @@ def markdown_table(export: Export) -> str:
                     r.model_name.replace("\n", " "),
                     f"`{r.engine_id}`",
                     str(r.prompt_count),
+                    fmt_num(r.model_load_ms, digits=0),
                     fmt_num(sc.overall),
                     fmt_num(sc.speed),
                     fmt_num(sc.throughput),
@@ -170,31 +174,57 @@ def _iso_date(iso: str) -> str:
         return iso
 
 
-def generate_overall_score_svg(export: Export, out_path: Path) -> None:
-    rows = sorted(export.summaries, key=lambda r: r.score.overall, reverse=True)
-    if not rows:
-        raise ValueError("No summaries in export")
+def generate_bar_chart_svg(
+    *,
+    rows: list[SummaryRow],
+    out_path: Path,
+    title: str,
+    subtitle: str,
+    unit: str,
+    value_fn,
+    sort_key_fn,
+    ascending: bool,
+    max_rows: int = 25,
+    max_value_override: Optional[float] = None,
+    tick_digits: Optional[int] = None,
+    value_digits: int = 1,
+) -> None:
+    rows2 = [r for r in rows if value_fn(r) is not None]
+    rows2.sort(key=sort_key_fn, reverse=not ascending)
+    rows2 = rows2[:max_rows]
+    if not rows2:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text("", encoding="utf-8")
+        return
 
-    title = "iOS Offline TTS Eval (Overall Score)"
-    subtitle = f"{export.device.device_model} ({export.device.system_name} {export.device.system_version}), dataset={export.dataset}, {len(rows)} models, {_iso_date(export.started_at_iso8601)}"
+    values = [float(value_fn(r) or 0.0) for r in rows2]
+    max_value = float(max_value_override) if max_value_override is not None else (max(values) if values else 1.0)
+    if max_value <= 0:
+        max_value = 1.0
 
     # Layout constants inspired by android-offline-transcribe/assets/android_tokens_per_second.svg
-    width = 820
-    left_label_w = 260
+    width = 860
+    left_label_w = 300
     chart_x0 = left_label_w
-    chart_x1 = 710
+    chart_x1 = 760
     chart_w = chart_x1 - chart_x0
     bar_h = 20
     row_gap = 6
     top_y = 60
-    max_value = 100.0
 
-    rows_h = len(rows) * (bar_h + row_gap) - row_gap
+    rows_h = len(rows2) * (bar_h + row_gap) - row_gap
     axis_y = top_y + rows_h + 16
-    height = axis_y + 34
+    height = axis_y + 40
 
     ticks = 5
     tick_step = max_value / ticks
+    if tick_digits is None:
+        if max_value < 1:
+            tick_digits = 2
+        elif max_value < 10:
+            tick_digits = 1
+        else:
+            tick_digits = 0
 
     def esc(s: str) -> str:
         return (
@@ -228,7 +258,7 @@ def generate_overall_score_svg(export: Export, out_path: Path) -> None:
         v = tick_step * i
         x = chart_x0 + (v / max_value) * chart_w
         parts.append(f"<line x1='{x:.1f}' y1='{axis_y}' x2='{x:.1f}' y2='{axis_y + 5}' stroke='#d1d5db' />")
-        parts.append(f"<text x='{x:.1f}' y='{axis_y + 20}' text-anchor='middle' class='axis'>{v:.0f}</text>")
+        parts.append(f"<text x='{x:.1f}' y='{axis_y + 20}' text-anchor='middle' class='axis'>{fmt_num(v, digits=tick_digits)}</text>")
         if i != 0:
             parts.append(f"<line x1='{x:.1f}' y1='56' x2='{x:.1f}' y2='{axis_y}' stroke='#f3f4f6' />")
 
@@ -238,18 +268,18 @@ def generate_overall_score_svg(export: Export, out_path: Path) -> None:
         return "#3b82f6"
 
     # Bars
-    for idx, r in enumerate(rows):
+    for idx, r in enumerate(rows2):
         y = top_y + idx * (bar_h + row_gap)
         label_y = y + 15
 
         parts.append(f"<text x='{chart_x0 - 8}' y='{label_y}' text-anchor='end' class='label'>{esc(r.model_name)}</text>")
 
-        value = max(0.0, min(max_value, r.score.overall))
-        w = (value / max_value) * chart_w
+        value = float(value_fn(r) or 0.0)
+        w = (max(0.0, value) / max_value) * chart_w
         fill = color_for(r.engine_id)
         parts.append(f"<rect x='{chart_x0}' y='{y}' width='{w:.1f}' height='{bar_h}' rx='3' fill='{fill}' />")
 
-        parts.append(f"<text x='{chart_x0 + w + 6:.1f}' y='{label_y}' class='value'>{value:.1f}</text>")
+        parts.append(f"<text x='{chart_x0 + w + 6:.1f}' y='{label_y}' class='value'>{fmt_num(value, digits=value_digits)}</text>")
 
     parts.append("</svg>")
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -276,7 +306,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate README benchmark table + SVG graph from TTSEval results JSON.")
     parser.add_argument("--input", type=str, default="", help="Path to results-*.json. Defaults to latest under device-exports/**/.")
     parser.add_argument("--readme", type=str, default="README.md", help="README path (repo-relative).")
-    parser.add_argument("--svg", type=str, default="docs/ios_tts_overall_score.svg", help="SVG output path (repo-relative).")
+    parser.add_argument("--svg", type=str, default="docs/ios_tts_overall_score.svg", help="Overall score SVG output path (repo-relative).")
+    parser.add_argument("--svg-tps", type=str, default="docs/ios_tts_tok_per_sec.svg", help="Tok/s SVG output path (repo-relative).")
+    parser.add_argument("--svg-rtf", type=str, default="docs/ios_tts_rtf.svg", help="RTF SVG output path (repo-relative).")
+    parser.add_argument("--svg-cpu", type=str, default="docs/ios_tts_cpu_avg.svg", help="CPU SVG output path (repo-relative).")
+    parser.add_argument("--svg-mem", type=str, default="docs/ios_tts_mem_max.svg", help="Mem SVG output path (repo-relative).")
     parser.add_argument("--update-readme", action="store_true", help="Update README between BENCHMARK_RESULTS markers.")
     args = parser.parse_args()
 
@@ -286,8 +320,76 @@ def main() -> int:
         in_path = (repo_dir / in_path).resolve()
 
     export = load_export(in_path)
-    svg_path = (repo_dir / args.svg).resolve()
-    generate_overall_score_svg(export, svg_path)
+    subtitle = f"{export.device.device_model} ({export.device.system_name} {export.device.system_version}), dataset={export.dataset}, {len(export.summaries)} models, {_iso_date(export.started_at_iso8601)}"
+
+    svg_overall = (repo_dir / args.svg).resolve()
+    svg_tps = (repo_dir / args.svg_tps).resolve()
+    svg_rtf = (repo_dir / args.svg_rtf).resolve()
+    svg_cpu = (repo_dir / args.svg_cpu).resolve()
+    svg_mem = (repo_dir / args.svg_mem).resolve()
+
+    generate_bar_chart_svg(
+        rows=export.summaries,
+        out_path=svg_overall,
+        title="iOS Offline TTS Eval (Overall Score)",
+        subtitle=subtitle,
+        unit="score",
+        value_fn=lambda r: r.score.overall,
+        sort_key_fn=lambda r: float(r.score.overall),
+        ascending=False,
+        max_value_override=100.0,
+        tick_digits=0,
+        value_digits=1,
+    )
+
+    generate_bar_chart_svg(
+        rows=export.summaries,
+        out_path=svg_tps,
+        title="Median Tok/s (tokens = NLTokenizer word)",
+        subtitle=subtitle,
+        unit="tok/s",
+        value_fn=lambda r: r.score.median_tps,
+        sort_key_fn=lambda r: float(r.score.median_tps),
+        ascending=False,
+        value_digits=1,
+    )
+
+    generate_bar_chart_svg(
+        rows=export.summaries,
+        out_path=svg_rtf,
+        title="Median RTF (lower is faster)",
+        subtitle=subtitle,
+        unit="rtf",
+        value_fn=lambda r: r.score.median_rtf,
+        sort_key_fn=lambda r: float(r.score.median_rtf or 1e9),
+        ascending=True,
+        tick_digits=2,
+        value_digits=3,
+    )
+
+    generate_bar_chart_svg(
+        rows=export.summaries,
+        out_path=svg_cpu,
+        title="Median CPU Avg (lower is better)",
+        subtitle=subtitle,
+        unit="cpu%",
+        value_fn=lambda r: r.score.median_cpu,
+        sort_key_fn=lambda r: float(r.score.median_cpu),
+        ascending=True,
+        value_digits=1,
+    )
+
+    generate_bar_chart_svg(
+        rows=export.summaries,
+        out_path=svg_mem,
+        title="Median Mem Max (MB) (lower is better)",
+        subtitle=subtitle,
+        unit="MB",
+        value_fn=lambda r: r.score.median_mem_mb,
+        sort_key_fn=lambda r: float(r.score.median_mem_mb),
+        ascending=True,
+        value_digits=1,
+    )
 
     block_lines = []
     block_lines.append("### Latest Benchmark")
@@ -297,6 +399,10 @@ def main() -> int:
     block_lines.append(f"- Started: `{export.started_at_iso8601}`")
     block_lines.append("")
     block_lines.append(f"![iOS TTS Overall Score]({args.svg})")
+    block_lines.append(f"![iOS TTS Tok/s]({args.svg_tps})")
+    block_lines.append(f"![iOS TTS RTF]({args.svg_rtf})")
+    block_lines.append(f"![iOS TTS CPU Avg]({args.svg_cpu})")
+    block_lines.append(f"![iOS TTS Mem Max]({args.svg_mem})")
     block_lines.append("")
     block_lines.append(markdown_table(export))
 
@@ -309,7 +415,11 @@ def main() -> int:
         update_readme(readme_path, block)
 
     print(f"Input: {in_path}")
-    print(f"SVG:   {svg_path}")
+    print(f"SVG overall: {svg_overall}")
+    print(f"SVG tps:     {svg_tps}")
+    print(f"SVG rtf:     {svg_rtf}")
+    print(f"SVG cpu:     {svg_cpu}")
+    print(f"SVG mem:     {svg_mem}")
     if args.update_readme:
         print(f"README updated: {readme_path}")
     return 0

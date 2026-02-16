@@ -8,40 +8,40 @@ text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .value { font-size: 10px; fill: #374151; font-weight: 600; }
 </style>
 <rect width='100%' height='100%' fill='#ffffff' />
-<text x='300' y='24' class='title'>iOS Offline TTS Eval (Overall Score)</text>
+<text x='300' y='24' class='title'>Median Mem Max (MB) (lower is better)</text>
 <text x='300' y='42' class='subtitle'>iPad8,7 (iPadOS 26.3), dataset=all, 5 models, 2026-02-15</text>
 <line x1='300' y1='56' x2='300' y2='200' stroke='#e5e7eb' />
 <line x1='300' y1='200' x2='760' y2='200' stroke='#e5e7eb' />
 <line x1='300.0' y1='200' x2='300.0' y2='205' stroke='#d1d5db' />
 <text x='300.0' y='220' text-anchor='middle' class='axis'>0</text>
 <line x1='392.0' y1='200' x2='392.0' y2='205' stroke='#d1d5db' />
-<text x='392.0' y='220' text-anchor='middle' class='axis'>20</text>
+<text x='392.0' y='220' text-anchor='middle' class='axis'>258</text>
 <line x1='392.0' y1='56' x2='392.0' y2='200' stroke='#f3f4f6' />
 <line x1='484.0' y1='200' x2='484.0' y2='205' stroke='#d1d5db' />
-<text x='484.0' y='220' text-anchor='middle' class='axis'>40</text>
+<text x='484.0' y='220' text-anchor='middle' class='axis'>517</text>
 <line x1='484.0' y1='56' x2='484.0' y2='200' stroke='#f3f4f6' />
 <line x1='576.0' y1='200' x2='576.0' y2='205' stroke='#d1d5db' />
-<text x='576.0' y='220' text-anchor='middle' class='axis'>60</text>
+<text x='576.0' y='220' text-anchor='middle' class='axis'>775</text>
 <line x1='576.0' y1='56' x2='576.0' y2='200' stroke='#f3f4f6' />
 <line x1='668.0' y1='200' x2='668.0' y2='205' stroke='#d1d5db' />
-<text x='668.0' y='220' text-anchor='middle' class='axis'>80</text>
+<text x='668.0' y='220' text-anchor='middle' class='axis'>1033</text>
 <line x1='668.0' y1='56' x2='668.0' y2='200' stroke='#f3f4f6' />
 <line x1='760.0' y1='200' x2='760.0' y2='205' stroke='#d1d5db' />
-<text x='760.0' y='220' text-anchor='middle' class='axis'>100</text>
+<text x='760.0' y='220' text-anchor='middle' class='axis'>1291</text>
 <line x1='760.0' y1='56' x2='760.0' y2='200' stroke='#f3f4f6' />
 <text x='292' y='75' text-anchor='end' class='label'>AVSpeech (System)</text>
-<rect x='300' y='60' width='460.0' height='20' rx='3' fill='#9ca3af' />
-<text x='766.0' y='75' class='value'>100.0</text>
-<text x='292' y='101' text-anchor='end' class='label'>Matcha (en_US LJSpeech) + Vocos</text>
-<rect x='300' y='86' width='413.2' height='20' rx='3' fill='#3b82f6' />
-<text x='719.2' y='101' class='value'>89.8</text>
-<text x='292' y='127' text-anchor='end' class='label'>Kitten Nano (en v0.1 fp16)</text>
-<rect x='300' y='112' width='284.3' height='20' rx='3' fill='#3b82f6' />
-<text x='590.3' y='127' class='value'>61.8</text>
-<text x='292' y='153' text-anchor='end' class='label'>Kokoro Int8 (Multi-lang v1.0)</text>
-<rect x='300' y='138' width='118.1' height='20' rx='3' fill='#3b82f6' />
-<text x='424.1' y='153' class='value'>25.7</text>
-<text x='292' y='179' text-anchor='end' class='label'>VITS LJS (Int8)</text>
-<rect x='300' y='164' width='97.3' height='20' rx='3' fill='#3b82f6' />
-<text x='403.3' y='179' class='value'>21.1</text>
+<rect x='300' y='60' width='7.3' height='20' rx='3' fill='#9ca3af' />
+<text x='313.3' y='75' class='value'>20.5</text>
+<text x='292' y='101' text-anchor='end' class='label'>Kokoro Int8 (Multi-lang v1.0)</text>
+<rect x='300' y='86' width='201.2' height='20' rx='3' fill='#3b82f6' />
+<text x='507.2' y='101' class='value'>564.8</text>
+<text x='292' y='127' text-anchor='end' class='label'>VITS LJS (Int8)</text>
+<rect x='300' y='112' width='296.9' height='20' rx='3' fill='#3b82f6' />
+<text x='602.9' y='127' class='value'>833.3</text>
+<text x='292' y='153' text-anchor='end' class='label'>Matcha (en_US LJSpeech) + Vocos</text>
+<rect x='300' y='138' width='410.2' height='20' rx='3' fill='#3b82f6' />
+<text x='716.2' y='153' class='value'>1151.5</text>
+<text x='292' y='179' text-anchor='end' class='label'>Kitten Nano (en v0.1 fp16)</text>
+<rect x='300' y='164' width='460.0' height='20' rx='3' fill='#3b82f6' />
+<text x='766.0' y='179' class='value'>1291.3</text>
 </svg>

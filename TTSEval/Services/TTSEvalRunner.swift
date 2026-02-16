@@ -31,6 +31,7 @@ final class TTSEvalRunner {
 
         var runs: [PromptRunResult] = []
         runs.reserveCapacity(models.count * prompts.count)
+        var modelLoadMsById: [String: Double] = [:]
 
         for model in models {
             try Task.checkCancellation()
@@ -57,7 +58,10 @@ final class TTSEvalRunner {
             do {
                 onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Preparing engine..."))
                 do {
+                    let t0 = CFAbsoluteTimeGetCurrent()
                     try await engine.prepare(model: model)
+                    let t1 = CFAbsoluteTimeGetCurrent()
+                    modelLoadMsById[model.id] = max((t1 - t0) * 1000.0, 0)
                 } catch let err as TTSEvalError {
                     // If the directory existed but was incomplete (or artifacts list included directories),
                     // prepare() can fail even though `isModelDownloaded` returned true. Retry by downloading
@@ -72,7 +76,10 @@ final class TTSEvalRunner {
                         }
                         try await downloader.downloadArtifacts(modelId: model.id, artifacts: model.artifacts)
                         onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Preparing engine (retry)..."))
+                        let t0 = CFAbsoluteTimeGetCurrent()
                         try await engine.prepare(model: model)
+                        let t1 = CFAbsoluteTimeGetCurrent()
+                        modelLoadMsById[model.id] = max((t1 - t0) * 1000.0, 0)
                     default:
                         throw err
                     }
@@ -103,10 +110,10 @@ final class TTSEvalRunner {
             await engine.unload()
         }
 
-        let summaries = Self.computeSummaries(from: runs)
+        let summaries = Self.computeSummaries(from: runs, modelLoadMsById: modelLoadMsById)
 
         return BenchmarkExport(
-            schemaVersion: 1,
+            schemaVersion: 2,
             startedAtISO8601: ISO8601DateFormatter().string(from: startedAt),
             dataset: "\(language.rawValue)_\(dataset.rawValue)",
             device: device,
@@ -189,7 +196,7 @@ final class TTSEvalRunner {
         )
     }
 
-    private static func computeSummaries(from runs: [PromptRunResult]) -> [ModelSummary] {
+    private static func computeSummaries(from runs: [PromptRunResult], modelLoadMsById: [String: Double]) -> [ModelSummary] {
         struct Aggregate {
             let modelId: String
             let modelName: String
@@ -287,6 +294,7 @@ final class TTSEvalRunner {
                 modelDisplayName: agg.modelName,
                 engineId: agg.engineId,
                 promptCount: agg.promptCount,
+                modelLoadMs: modelLoadMsById[agg.modelId],
                 score: score
             ))
         }
