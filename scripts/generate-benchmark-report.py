@@ -131,16 +131,15 @@ def fmt_num(v: Optional[float], digits: int = 2) -> str:
 
 
 def markdown_table(export: Export) -> str:
-    rows = sorted(export.summaries, key=lambda r: r.score.overall, reverse=True)
+    rows = sorted(export.summaries, key=lambda r: r.score.median_tps, reverse=True)
 
     header = [
-        "| Model | Engine | Prompts | Model Load (ms) | Overall | Speed | Tok/s Score | Resource | Median RTF | Median Tok/s | Median CPU | Median Mem (MB) |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Model | Engine | Prompts | Median Tok/s |",
+        "|---|---|---:|---:|",
     ]
 
     body = []
     for r in rows:
-        sc = r.score
         body.append(
             "| "
             + " | ".join(
@@ -148,15 +147,7 @@ def markdown_table(export: Export) -> str:
                     r.model_name.replace("\n", " "),
                     f"`{r.engine_id}`",
                     str(r.prompt_count),
-                    fmt_num(r.model_load_ms, digits=0),
-                    fmt_num(sc.overall),
-                    fmt_num(sc.speed),
-                    fmt_num(sc.throughput),
-                    fmt_num(sc.resource),
-                    fmt_num(sc.median_rtf, digits=3) if sc.median_rtf is not None else "-",
-                    fmt_num(sc.median_tps),
-                    fmt_num(sc.median_cpu),
-                    fmt_num(sc.median_mem_mb),
+                    fmt_num(r.score.median_tps),
                 ]
             )
             + " |"
@@ -303,14 +294,10 @@ def update_readme(readme_path: Path, generated_block: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate README benchmark table + SVG graph from TTSEval results JSON.")
+    parser = argparse.ArgumentParser(description="Generate a simple tok/s benchmark table + SVG from TTSEval results JSON.")
     parser.add_argument("--input", type=str, default="", help="Path to results-*.json. Defaults to latest under device-exports/**/.")
     parser.add_argument("--readme", type=str, default="README.md", help="README path (repo-relative).")
-    parser.add_argument("--svg", type=str, default="docs/ios_tts_overall_score.svg", help="Overall score SVG output path (repo-relative).")
     parser.add_argument("--svg-tps", type=str, default="docs/ios_tts_tok_per_sec.svg", help="Tok/s SVG output path (repo-relative).")
-    parser.add_argument("--svg-rtf", type=str, default="docs/ios_tts_rtf.svg", help="RTF SVG output path (repo-relative).")
-    parser.add_argument("--svg-cpu", type=str, default="docs/ios_tts_cpu_avg.svg", help="CPU SVG output path (repo-relative).")
-    parser.add_argument("--svg-mem", type=str, default="docs/ios_tts_mem_max.svg", help="Mem SVG output path (repo-relative).")
     parser.add_argument("--update-readme", action="store_true", help="Update README between BENCHMARK_RESULTS markers.")
     args = parser.parse_args()
 
@@ -322,72 +309,17 @@ def main() -> int:
     export = load_export(in_path)
     subtitle = f"{export.device.device_model} ({export.device.system_name} {export.device.system_version}), dataset={export.dataset}, {len(export.summaries)} models, {_iso_date(export.started_at_iso8601)}"
 
-    svg_overall = (repo_dir / args.svg).resolve()
     svg_tps = (repo_dir / args.svg_tps).resolve()
-    svg_rtf = (repo_dir / args.svg_rtf).resolve()
-    svg_cpu = (repo_dir / args.svg_cpu).resolve()
-    svg_mem = (repo_dir / args.svg_mem).resolve()
-
-    generate_bar_chart_svg(
-        rows=export.summaries,
-        out_path=svg_overall,
-        title="iOS Offline TTS Eval (Overall Score)",
-        subtitle=subtitle,
-        unit="score",
-        value_fn=lambda r: r.score.overall,
-        sort_key_fn=lambda r: float(r.score.overall),
-        ascending=False,
-        max_value_override=100.0,
-        tick_digits=0,
-        value_digits=1,
-    )
 
     generate_bar_chart_svg(
         rows=export.summaries,
         out_path=svg_tps,
-        title="Median Tok/s (tokens = NLTokenizer word)",
+        title="iOS TTS — Median Throughput (tok/s)",
         subtitle=subtitle,
         unit="tok/s",
         value_fn=lambda r: r.score.median_tps,
         sort_key_fn=lambda r: float(r.score.median_tps),
         ascending=False,
-        value_digits=1,
-    )
-
-    generate_bar_chart_svg(
-        rows=export.summaries,
-        out_path=svg_rtf,
-        title="Median RTF (lower is faster)",
-        subtitle=subtitle,
-        unit="rtf",
-        value_fn=lambda r: r.score.median_rtf,
-        sort_key_fn=lambda r: float(r.score.median_rtf or 1e9),
-        ascending=True,
-        tick_digits=2,
-        value_digits=3,
-    )
-
-    generate_bar_chart_svg(
-        rows=export.summaries,
-        out_path=svg_cpu,
-        title="Median CPU Avg (lower is better)",
-        subtitle=subtitle,
-        unit="cpu%",
-        value_fn=lambda r: r.score.median_cpu,
-        sort_key_fn=lambda r: float(r.score.median_cpu),
-        ascending=True,
-        value_digits=1,
-    )
-
-    generate_bar_chart_svg(
-        rows=export.summaries,
-        out_path=svg_mem,
-        title="Median Mem Max (MB) (lower is better)",
-        subtitle=subtitle,
-        unit="MB",
-        value_fn=lambda r: r.score.median_mem_mb,
-        sort_key_fn=lambda r: float(r.score.median_mem_mb),
-        ascending=True,
         value_digits=1,
     )
 
@@ -398,11 +330,7 @@ def main() -> int:
     block_lines.append(f"- Dataset: `{export.dataset}`")
     block_lines.append(f"- Started: `{export.started_at_iso8601}`")
     block_lines.append("")
-    block_lines.append(f"![iOS TTS Overall Score]({args.svg})")
     block_lines.append(f"![iOS TTS Tok/s]({args.svg_tps})")
-    block_lines.append(f"![iOS TTS RTF]({args.svg_rtf})")
-    block_lines.append(f"![iOS TTS CPU Avg]({args.svg_cpu})")
-    block_lines.append(f"![iOS TTS Mem Max]({args.svg_mem})")
     block_lines.append("")
     block_lines.append(markdown_table(export))
 
@@ -415,11 +343,7 @@ def main() -> int:
         update_readme(readme_path, block)
 
     print(f"Input: {in_path}")
-    print(f"SVG overall: {svg_overall}")
     print(f"SVG tps:     {svg_tps}")
-    print(f"SVG rtf:     {svg_rtf}")
-    print(f"SVG cpu:     {svg_cpu}")
-    print(f"SVG mem:     {svg_mem}")
     if args.update_readme:
         print(f"README updated: {readme_path}")
     return 0

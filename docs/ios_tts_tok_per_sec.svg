@@ -1,127 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="490" viewBox="-80 0 1000 490">
-<defs>
-  <linearGradient id="g-system" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#4f46e5"/>
-  </linearGradient>
-  <linearGradient id="g-matcha" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/>
-  </linearGradient>
-  <linearGradient id="g-kitten" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#db2777"/>
-  </linearGradient>
-  <linearGradient id="g-kokoro" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/>
-  </linearGradient>
-  <linearGradient id="g-vits" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/>
-  </linearGradient>
-  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ec4899"/>
-  </linearGradient>
-</defs>
+<svg xmlns='http://www.w3.org/2000/svg' width='860' height='396' viewBox='0 0 860 396'>
 <style>
-  text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, sans-serif; }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+.title { font-size: 18px; font-weight: 700; fill: #1f2937; }
+.subtitle { font-size: 11px; fill: #6b7280; }
+.axis { font-size: 10px; fill: #6b7280; }
+.label { font-size: 11px; fill: #374151; }
+.value { font-size: 10px; fill: #374151; font-weight: 600; }
 </style>
-
-<!-- Card -->
-<rect x="-80" width="1000" height="490" rx="12" fill="white"/>
-<rect x="-79" y="1" width="998" height="488" rx="11" fill="white" stroke="#e2e8f0" stroke-width="1"/>
-<rect x="-79" y="1" width="998" height="5" rx="11" fill="url(#accent)" style="clip-path: inset(0 0 0 0 round 11px 11px 0 0)"/>
-
-<!-- Title -->
-<text x="270" y="34" font-size="18" font-weight="700" fill="#111827">iOS TTS — Median Throughput (tok/s)</text>
-<text x="270" y="52" font-size="11" fill="#9ca3af">iPad Pro 3rd gen (A12X) · dataset=en_all · 11 models · Feb 2026</text>
-
-<!-- Grid (0, 40, 80, 120, 150) scale: 560/151.3 = 3.70 -->
-<line x1="270" y1="66" x2="270" y2="398" stroke="#e5e7eb" stroke-width="1"/>
-<line x1="418" y1="66" x2="418" y2="398" stroke="#f1f5f9" stroke-width="1"/>
-<line x1="566" y1="66" x2="566" y2="398" stroke="#f1f5f9" stroke-width="1"/>
-<line x1="714" y1="66" x2="714" y2="398" stroke="#f1f5f9" stroke-width="1"/>
-
-<!-- X-axis -->
-<line x1="270" y1="398" x2="840" y2="398" stroke="#e5e7eb" stroke-width="1"/>
-<text x="270" y="414" text-anchor="middle" font-size="9" fill="#9ca3af">0</text>
-<text x="418" y="414" text-anchor="middle" font-size="9" fill="#9ca3af">40</text>
-<text x="566" y="414" text-anchor="middle" font-size="9" fill="#9ca3af">80</text>
-<text x="714" y="414" text-anchor="middle" font-size="9" fill="#9ca3af">120</text>
-<text x="850" y="414" font-size="9" fill="#b0b8c4">tok/s &#x2192;</text>
-
-<!-- RTF = 1.0 reference line -->
-<line x1="307" y1="66" x2="307" y2="398" stroke="#fca5a5" stroke-width="1" stroke-dasharray="4 3"/>
-<text x="309" y="414" font-size="8" fill="#f87171">RTF=1</text>
-
-<!-- Row 0: AVSpeech (System) — 151.3 tok/s -->
-<text x="260" y="87" text-anchor="end" font-size="11" fill="#374151">AVSpeech (System)</text>
-<rect x="270" y="72" width="560" height="22" rx="5" fill="url(#g-system)"/>
-<text x="836" y="87" font-size="10" font-weight="600" fill="#1f2937">151.3</text>
-
-<!-- Row 1: Matcha LJSpeech + Vocos — 25.7 tok/s -->
-<rect x="-80" y="98" width="1000" height="30" fill="#f8fafc"/>
-<text x="260" y="117" text-anchor="end" font-size="11" fill="#374151">Matcha LJSpeech + Vocos</text>
-<rect x="270" y="102" width="95" height="22" rx="5" fill="url(#g-matcha)"/>
-<text x="371" y="117" font-size="10" font-weight="600" fill="#1f2937">25.7</text>
-
-<!-- Row 2: Kitten Nano v0.1 — 5.6 tok/s -->
-<text x="260" y="147" text-anchor="end" font-size="11" fill="#374151">Kitten Nano v0.1</text>
-<rect x="270" y="132" width="21" height="22" rx="5" fill="url(#g-kitten)"/>
-<text x="297" y="147" font-size="10" font-weight="600" fill="#1f2937">5.6</text>
-
-<!-- Row 3: Kitten Nano v0.2 — 5.1 tok/s -->
-<rect x="-80" y="158" width="1000" height="30" fill="#f8fafc"/>
-<text x="260" y="177" text-anchor="end" font-size="11" fill="#374151">Kitten Nano v0.2</text>
-<rect x="270" y="162" width="19" height="22" rx="5" fill="url(#g-kitten)"/>
-<text x="295" y="177" font-size="10" font-weight="600" fill="#1f2937">5.1</text>
-
-<!-- Row 4: Kokoro EN v0.19 — 4.0 tok/s -->
-<text x="260" y="207" text-anchor="end" font-size="11" fill="#374151">Kokoro EN v0.19</text>
-<rect x="270" y="192" width="15" height="22" rx="5" fill="url(#g-kokoro)"/>
-<text x="291" y="207" font-size="10" font-weight="600" fill="#1f2937">4.0</text>
-
-<!-- Row 5: Kokoro Multi-lang INT8 v1.1 — 1.7 tok/s -->
-<rect x="-80" y="218" width="1000" height="30" fill="#f8fafc"/>
-<text x="260" y="237" text-anchor="end" font-size="11" fill="#374151">Kokoro Multi-lang INT8 v1.1</text>
-<rect x="270" y="222" width="6" height="22" rx="3" fill="url(#g-kokoro)"/>
-<text x="282" y="237" font-size="10" font-weight="600" fill="#1f2937">1.7</text>
-
-<!-- Row 6: Kitten Mini EN v0.1 — 1.6 tok/s -->
-<text x="260" y="267" text-anchor="end" font-size="11" fill="#374151">Kitten Mini EN v0.1</text>
-<rect x="270" y="252" width="6" height="22" rx="3" fill="url(#g-kitten)"/>
-<text x="282" y="267" font-size="10" font-weight="600" fill="#1f2937">1.6</text>
-
-<!-- Row 7: VITS VCTK INT8 — 1.4 tok/s -->
-<rect x="-80" y="278" width="1000" height="30" fill="#f8fafc"/>
-<text x="260" y="297" text-anchor="end" font-size="11" fill="#374151">VITS VCTK (INT8)</text>
-<rect x="270" y="282" width="5" height="22" rx="3" fill="url(#g-vits)"/>
-<text x="281" y="297" font-size="10" font-weight="600" fill="#1f2937">1.4</text>
-
-<!-- Row 8: Kokoro INT8 Multi-lang v1.0 — 1.4 tok/s -->
-<text x="260" y="327" text-anchor="end" font-size="11" fill="#374151">Kokoro INT8 Multi-lang v1.0</text>
-<rect x="270" y="312" width="5" height="22" rx="3" fill="url(#g-kokoro)"/>
-<text x="281" y="327" font-size="10" font-weight="600" fill="#1f2937">1.4</text>
-
-<!-- Row 9: VITS LJSpeech INT8 — 1.2 tok/s -->
-<rect x="-80" y="338" width="1000" height="30" fill="#f8fafc"/>
-<text x="260" y="357" text-anchor="end" font-size="11" fill="#374151">VITS LJSpeech (INT8)</text>
-<rect x="270" y="342" width="4" height="22" rx="2" fill="url(#g-vits)"/>
-<text x="280" y="357" font-size="10" font-weight="600" fill="#1f2937">1.2</text>
-
-<!-- Row 10: VITS Melo ZH+EN INT8 — 0.8 tok/s -->
-<text x="260" y="387" text-anchor="end" font-size="11" fill="#374151">VITS Melo ZH+EN (INT8)</text>
-<rect x="270" y="372" width="3" height="22" rx="2" fill="url(#g-vits)"/>
-<text x="279" y="387" font-size="10" font-weight="600" fill="#1f2937">0.8</text>
-
-<!-- Legend -->
-<circle cx="270" cy="440" r="5" fill="#4f46e5"/>
-<text x="280" y="444" font-size="10" fill="#6b7280">AVSpeech (System)</text>
-<circle cx="410" cy="440" r="5" fill="#7c3aed"/>
-<text x="420" y="444" font-size="10" fill="#6b7280">Matcha</text>
-<circle cx="490" cy="440" r="5" fill="#db2777"/>
-<text x="500" y="444" font-size="10" fill="#6b7280">Kitten</text>
-<circle cx="560" cy="440" r="5" fill="#d97706"/>
-<text x="570" y="444" font-size="10" fill="#6b7280">Kokoro</text>
-<circle cx="640" cy="440" r="5" fill="#2563eb"/>
-<text x="650" y="444" font-size="10" fill="#6b7280">VITS</text>
-
-<!-- RTF note -->
-<text x="270" y="468" font-size="9" fill="#f87171">Dashed line = real-time boundary (RTF 1.0)</text>
+<rect width='100%' height='100%' fill='#ffffff' />
+<text x='300' y='24' class='title'>iOS TTS — Median Throughput (tok/s)</text>
+<text x='300' y='42' class='subtitle'>iPad8,7 (iPadOS 26.3), dataset=en_all, 11 models, 2026-02-16</text>
+<line x1='300' y1='56' x2='300' y2='356' stroke='#e5e7eb' />
+<line x1='300' y1='356' x2='760' y2='356' stroke='#e5e7eb' />
+<line x1='300.0' y1='356' x2='300.0' y2='361' stroke='#d1d5db' />
+<text x='300.0' y='376' text-anchor='middle' class='axis'>0</text>
+<line x1='392.0' y1='356' x2='392.0' y2='361' stroke='#d1d5db' />
+<text x='392.0' y='376' text-anchor='middle' class='axis'>30</text>
+<line x1='392.0' y1='56' x2='392.0' y2='356' stroke='#f3f4f6' />
+<line x1='484.0' y1='356' x2='484.0' y2='361' stroke='#d1d5db' />
+<text x='484.0' y='376' text-anchor='middle' class='axis'>61</text>
+<line x1='484.0' y1='56' x2='484.0' y2='356' stroke='#f3f4f6' />
+<line x1='576.0' y1='356' x2='576.0' y2='361' stroke='#d1d5db' />
+<text x='576.0' y='376' text-anchor='middle' class='axis'>91</text>
+<line x1='576.0' y1='56' x2='576.0' y2='356' stroke='#f3f4f6' />
+<line x1='668.0' y1='356' x2='668.0' y2='361' stroke='#d1d5db' />
+<text x='668.0' y='376' text-anchor='middle' class='axis'>121</text>
+<line x1='668.0' y1='56' x2='668.0' y2='356' stroke='#f3f4f6' />
+<line x1='760.0' y1='356' x2='760.0' y2='361' stroke='#d1d5db' />
+<text x='760.0' y='376' text-anchor='middle' class='axis'>151</text>
+<line x1='760.0' y1='56' x2='760.0' y2='356' stroke='#f3f4f6' />
+<text x='292' y='75' text-anchor='end' class='label'>AVSpeech (System)</text>
+<rect x='300' y='60' width='460.0' height='20' rx='3' fill='#9ca3af' />
+<text x='766.0' y='75' class='value'>151.3</text>
+<text x='292' y='101' text-anchor='end' class='label'>Matcha (en_US LJSpeech) + Vocos</text>
+<rect x='300' y='86' width='78.0' height='20' rx='3' fill='#3b82f6' />
+<text x='384.0' y='101' class='value'>25.7</text>
+<text x='292' y='127' text-anchor='end' class='label'>Kitten Nano (en v0.1 fp16)</text>
+<rect x='300' y='112' width='17.1' height='20' rx='3' fill='#3b82f6' />
+<text x='323.1' y='127' class='value'>5.6</text>
+<text x='292' y='153' text-anchor='end' class='label'>Kitten Nano EN (v0.2 fp16)</text>
+<rect x='300' y='138' width='15.6' height='20' rx='3' fill='#3b82f6' />
+<text x='321.6' y='153' class='value'>5.1</text>
+<text x='292' y='179' text-anchor='end' class='label'>Kokoro EN (v0.19)</text>
+<rect x='300' y='164' width='12.2' height='20' rx='3' fill='#3b82f6' />
+<text x='318.2' y='179' class='value'>4.0</text>
+<text x='292' y='205' text-anchor='end' class='label'>Kokoro Multi-lang INT8 (v1.1)</text>
+<rect x='300' y='190' width='5.2' height='20' rx='3' fill='#3b82f6' />
+<text x='311.2' y='205' class='value'>1.7</text>
+<text x='292' y='231' text-anchor='end' class='label'>Kitten Mini EN (v0.1 fp16)</text>
+<rect x='300' y='216' width='4.9' height='20' rx='3' fill='#3b82f6' />
+<text x='310.9' y='231' class='value'>1.6</text>
+<text x='292' y='257' text-anchor='end' class='label'>VITS VCTK (Int8)</text>
+<rect x='300' y='242' width='4.4' height='20' rx='3' fill='#3b82f6' />
+<text x='310.4' y='257' class='value'>1.4</text>
+<text x='292' y='283' text-anchor='end' class='label'>Kokoro Int8 (Multi-lang v1.0)</text>
+<rect x='300' y='268' width='4.2' height='20' rx='3' fill='#3b82f6' />
+<text x='310.2' y='283' class='value'>1.4</text>
+<text x='292' y='309' text-anchor='end' class='label'>VITS LJS (Int8)</text>
+<rect x='300' y='294' width='3.7' height='20' rx='3' fill='#3b82f6' />
+<text x='309.7' y='309' class='value'>1.2</text>
+<text x='292' y='335' text-anchor='end' class='label'>VITS Melo (ZH+EN, Int8)</text>
+<rect x='300' y='320' width='2.5' height='20' rx='3' fill='#3b82f6' />
+<text x='308.5' y='335' class='value'>0.8</text>
 </svg>
