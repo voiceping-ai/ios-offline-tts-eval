@@ -82,6 +82,8 @@ struct SherpaOfflineTTSConfig: Codable, Hashable, Sendable {
 
     // Common
     var numThreads: Int? = nil
+    var ruleFsts: [String] = []
+    var ruleFars: [String] = []
 
     // Kokoro
     var modelPath: String? = nil

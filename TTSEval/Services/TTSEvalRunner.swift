@@ -53,48 +53,53 @@ final class TTSEvalRunner {
                 throw TTSEvalError.engineUnavailable("No engine registered for \(model.engineId)")
             }
 
-            onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Preparing engine..."))
             do {
-                try await engine.prepare(model: model)
-            } catch let err as TTSEvalError {
-                // If the directory existed but was incomplete (or artifacts list included directories),
-                // prepare() can fail even though `isModelDownloaded` returned true. Retry by downloading
-                // again; the downloader skips already-present files.
-                switch err {
-                case .modelNotDownloaded:
-                    guard !model.artifacts.isEmpty else { throw err }
-                    onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Downloading missing files..."))
-                    let downloader = HuggingFaceDownloader()
-                    downloader.onProgress = { frac in
-                        onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Downloading missing files..."))
-                    }
-                    try await downloader.downloadArtifacts(modelId: model.id, artifacts: model.artifacts)
-                    onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Preparing engine (retry)..."))
+                onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Preparing engine..."))
+                do {
                     try await engine.prepare(model: model)
-                default:
-                    throw err
+                } catch let err as TTSEvalError {
+                    // If the directory existed but was incomplete (or artifacts list included directories),
+                    // prepare() can fail even though `isModelDownloaded` returned true. Retry by downloading
+                    // again; the downloader skips already-present files.
+                    switch err {
+                    case .modelNotDownloaded:
+                        guard !model.artifacts.isEmpty else { throw err }
+                        onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Downloading missing files..."))
+                        let downloader = HuggingFaceDownloader()
+                        downloader.onProgress = { frac in
+                            onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Downloading missing files..."))
+                        }
+                        try await downloader.downloadArtifacts(modelId: model.id, artifacts: model.artifacts)
+                        onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Preparing engine (retry)..."))
+                        try await engine.prepare(model: model)
+                    default:
+                        throw err
+                    }
                 }
+                for (idx, prompt) in prompts.enumerated() {
+                    try Task.checkCancellation()
+
+                    let frac = Double(idx) / Double(max(1, prompts.count))
+                    onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Running \(idx + 1)/\(prompts.count)"))
+
+                    let run = try await runSingle(
+                        model: model,
+                        engine: engine,
+                        promptIndex: idx,
+                        prompt: prompt,
+                        synthesisSettings: synthesisSettings
+                    )
+                    runs.append(run)
+                }
+
+                onProgress?(.init(modelId: model.id, fraction0to1: 1, message: "Done"))
             } catch {
+                await engine.unload()
                 throw error
             }
 
-            for (idx, prompt) in prompts.enumerated() {
-                try Task.checkCancellation()
-
-                let frac = Double(idx) / Double(max(1, prompts.count))
-                onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Running \(idx + 1)/\(prompts.count)"))
-
-                let run = try await runSingle(
-                    model: model,
-                    engine: engine,
-                    promptIndex: idx,
-                    prompt: prompt,
-                    synthesisSettings: synthesisSettings
-                )
-                runs.append(run)
-            }
-
-            onProgress?(.init(modelId: model.id, fraction0to1: 1, message: "Done"))
+            // Ensure we don't keep model memory resident across models (benchmark correctness).
+            await engine.unload()
         }
 
         let summaries = Self.computeSummaries(from: runs)

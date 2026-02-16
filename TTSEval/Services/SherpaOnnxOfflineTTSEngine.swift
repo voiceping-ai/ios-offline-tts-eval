@@ -6,7 +6,7 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
     let id: String = TTSEngineIds.sherpa
     let displayName: String = "Sherpa-ONNX Offline TTS (CPU)"
 
-    private var ttsByModelId: [String: SherpaOnnxOfflineTtsWrapper] = [:]
+    private var wrapper: SherpaOnnxOfflineTtsWrapper?
     private var activeModelId: String?
 
     func prepare(model: TTSModel) async throws {
@@ -17,9 +17,13 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             throw TTSEvalError.invalidModel("Missing Sherpa config for \(model.displayName)")
         }
 
-        if ttsByModelId[model.id] != nil {
-            activeModelId = model.id
+        if activeModelId == model.id, wrapper != nil {
             return
+        }
+        // Ensure we never keep multiple models resident at once.
+        if activeModelId != model.id {
+            wrapper = nil
+            activeModelId = nil
         }
 
         let modelDir = try ModelStorage.modelDirectory(modelId: model.id)
@@ -28,15 +32,40 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
         let numThreads = cfg.numThreads ?? Self.recommendedThreads()
         let provider = "cpu"
 
-        let abs: (String?) -> String = { rel in
+        let absFile: (String?) -> String = { rel in
             guard let rel, !rel.isEmpty else { return "" }
-            return modelDir.appendingPathComponent(rel).path
+            return modelDir.appendingPathComponent(rel, isDirectory: false).path
+        }
+
+        // Some Sherpa configs accept multiple lexicons as a comma-separated list.
+        let absFilesCSV: (String?) -> String = { relCSV in
+            guard let relCSV else { return "" }
+            let parts = relCSV
+                .split(separator: ",")
+                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            if parts.isEmpty { return "" }
+            return parts
+                .map { modelDir.appendingPathComponent($0, isDirectory: false).path }
+                .joined(separator: ",")
         }
 
         let absDir: (String?) -> String = { rel in
             guard let rel, !rel.isEmpty else { return "" }
             return modelDir.appendingPathComponent(rel, isDirectory: true).path
         }
+
+        let ruleFstsAbs = cfg.ruleFsts
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { modelDir.appendingPathComponent($0, isDirectory: false).path }
+            .joined(separator: ",")
+
+        let ruleFarsAbs = cfg.ruleFars
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { modelDir.appendingPathComponent($0, isDirectory: false).path }
+            .joined(separator: ",")
 
         let vitsCfg: SherpaOnnxOfflineTtsVitsModelConfig
         let matchaCfg: SherpaOnnxOfflineTtsMatchaModelConfig
@@ -47,9 +76,9 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
         switch cfg.type {
         case .vits:
             vitsCfg = sherpaOnnxOfflineTtsVitsModelConfig(
-                model: abs(cfg.modelPath),
-                lexicon: abs(cfg.lexiconPath),
-                tokens: abs(cfg.tokensPath),
+                model: absFile(cfg.modelPath),
+                lexicon: absFilesCSV(cfg.lexiconPath),
+                tokens: absFile(cfg.tokensPath),
                 dataDir: absDir(cfg.dataDir),
                 noiseScale: cfg.noiseScale ?? 0.667,
                 noiseScaleW: cfg.noiseScaleW ?? 0.8,
@@ -63,10 +92,10 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
         case .matcha:
             vitsCfg = sherpaOnnxOfflineTtsVitsModelConfig()
             matchaCfg = sherpaOnnxOfflineTtsMatchaModelConfig(
-                acousticModel: abs(cfg.acousticModelPath),
-                vocoder: abs(cfg.vocoderPath),
-                lexicon: abs(cfg.lexiconPath),
-                tokens: abs(cfg.tokensPath),
+                acousticModel: absFile(cfg.acousticModelPath),
+                vocoder: absFile(cfg.vocoderPath),
+                lexicon: absFilesCSV(cfg.lexiconPath),
+                tokens: absFile(cfg.tokensPath),
                 dataDir: absDir(cfg.dataDir),
                 noiseScale: cfg.noiseScale ?? 0.667,
                 lengthScale: cfg.lengthScale ?? 1.0,
@@ -79,13 +108,13 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             vitsCfg = sherpaOnnxOfflineTtsVitsModelConfig()
             matchaCfg = sherpaOnnxOfflineTtsMatchaModelConfig()
             kokoroCfg = sherpaOnnxOfflineTtsKokoroModelConfig(
-                model: abs(cfg.modelPath),
-                voices: abs(cfg.voicesPath),
-                tokens: abs(cfg.tokensPath),
+                model: absFile(cfg.modelPath),
+                voices: absFile(cfg.voicesPath),
+                tokens: absFile(cfg.tokensPath),
                 dataDir: absDir(cfg.dataDir),
                 lengthScale: cfg.lengthScale ?? 1.0,
                 dictDir: absDir(cfg.dictDir),
-                lexicon: abs(cfg.lexiconPath),
+                lexicon: absFilesCSV(cfg.lexiconPath),
                 lang: cfg.lang ?? ""
             )
             kittenCfg = sherpaOnnxOfflineTtsKittenModelConfig()
@@ -95,9 +124,9 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             matchaCfg = sherpaOnnxOfflineTtsMatchaModelConfig()
             kokoroCfg = sherpaOnnxOfflineTtsKokoroModelConfig()
             kittenCfg = sherpaOnnxOfflineTtsKittenModelConfig(
-                model: abs(cfg.modelPath),
-                voices: abs(cfg.voicesPath),
-                tokens: abs(cfg.tokensPath),
+                model: absFile(cfg.modelPath),
+                voices: absFile(cfg.voicesPath),
+                tokens: absFile(cfg.tokensPath),
                 dataDir: absDir(cfg.dataDir),
                 lengthScale: cfg.lengthScale ?? 1.0
             )
@@ -108,12 +137,12 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             kokoroCfg = sherpaOnnxOfflineTtsKokoroModelConfig()
             kittenCfg = sherpaOnnxOfflineTtsKittenModelConfig()
             zipvoiceCfg = sherpaOnnxOfflineTtsZipvoiceModelConfig(
-                tokens: abs(cfg.tokensPath),
-                encoder: abs(cfg.encoderPath),
-                decoder: abs(cfg.decoderPath),
-                vocoder: abs(cfg.vocoderPath),
+                tokens: absFile(cfg.tokensPath),
+                encoder: absFile(cfg.encoderPath),
+                decoder: absFile(cfg.decoderPath),
+                vocoder: absFile(cfg.vocoderPath),
                 dataDir: absDir(cfg.dataDir),
-                lexicon: abs(cfg.lexiconPath),
+                lexicon: absFilesCSV(cfg.lexiconPath),
                 featScale: cfg.featScale ?? 0.1,
                 tShift: cfg.tShift ?? 0.5,
                 targetRms: cfg.targetRms ?? 0.1,
@@ -134,8 +163,8 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
 
         var ttsCfg = sherpaOnnxOfflineTtsConfig(
             model: modelCfg,
-            ruleFsts: "",
-            ruleFars: "",
+            ruleFsts: ruleFstsAbs,
+            ruleFars: ruleFarsAbs,
             maxNumSentences: 1,
             silenceScale: 0.2
         )
@@ -148,7 +177,7 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             throw TTSEvalError.synthesisFailed("Failed to initialize Sherpa offline TTS for \(model.displayName)")
         }
 
-        ttsByModelId[model.id] = wrapper
+        self.wrapper = wrapper
         activeModelId = model.id
     }
 
@@ -158,7 +187,7 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             throw TTSEvalError.synthesisFailed("Text is empty")
         }
 
-        guard let activeModelId, let wrapper = ttsByModelId[activeModelId] else {
+        guard activeModelId != nil, let wrapper else {
             throw TTSEvalError.engineUnavailable("Model not prepared")
         }
 
@@ -169,21 +198,37 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
     }
 
     func unload() async {
-        ttsByModelId.removeAll()
+        wrapper = nil
         activeModelId = nil
     }
 
     private func validateRequiredFiles(cfg: SherpaOfflineTTSConfig, in dir: URL, modelName: String) throws {
-        func requireFile(_ rel: String?, label: String) throws {
-            guard let rel, !rel.isEmpty else { return }
-            let url = dir.appendingPathComponent(rel)
+        func requireNonEmpty(_ rel: String?, label: String) throws -> String {
+            let trimmed = (rel ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else {
+                throw TTSEvalError.invalidModel("Missing required \(label) config for \(modelName)")
+            }
+            return trimmed
+        }
+
+        func requireFile(_ rel: String, label: String) throws {
+            let url = dir.appendingPathComponent(rel, isDirectory: false)
             if !FileManager.default.fileExists(atPath: url.path) {
                 throw TTSEvalError.modelNotDownloaded("Missing \(label) for \(modelName): \(rel)")
             }
         }
 
-        func requireDir(_ rel: String?, label: String) throws {
-            guard let rel, !rel.isEmpty else { return }
+        func requireFileListCSV(_ relCSV: String?, label: String) throws {
+            let parts = (relCSV ?? "")
+                .split(separator: ",")
+                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            for p in parts {
+                try requireFile(p, label: label)
+            }
+        }
+
+        func requireDir(_ rel: String, label: String) throws {
             let url = dir.appendingPathComponent(rel, isDirectory: true)
             var isDir: ObjCBool = false
             if !FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) || !isDir.boolValue {
@@ -191,33 +236,58 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
             }
         }
 
+        func requireDirIfPresent(_ rel: String?, label: String) throws {
+            let trimmed = (rel ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            try requireDir(trimmed, label: label)
+        }
+
+        func requireFileIfPresent(_ rel: String?, label: String) throws {
+            let trimmed = (rel ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            try requireFile(trimmed, label: label)
+        }
+
+        // Optional rule files.
+        for f in cfg.ruleFsts.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }).filter({ !$0.isEmpty }) {
+            try requireFile(f, label: "rule fst")
+        }
+        for f in cfg.ruleFars.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }).filter({ !$0.isEmpty }) {
+            try requireFile(f, label: "rule far")
+        }
+
         switch cfg.type {
         case .kokoro:
-            try requireFile(cfg.modelPath, label: "model")
-            try requireFile(cfg.voicesPath, label: "voices")
-            try requireFile(cfg.tokensPath, label: "tokens")
-            try requireFile(cfg.lexiconPath, label: "lexicon")
-            try requireDir(cfg.dataDir, label: "data")
-            try requireDir(cfg.dictDir, label: "dict")
+            try requireFile(requireNonEmpty(cfg.modelPath, label: "model path"), label: "model")
+            try requireFile(requireNonEmpty(cfg.voicesPath, label: "voices path"), label: "voices")
+            try requireFile(requireNonEmpty(cfg.tokensPath, label: "tokens path"), label: "tokens")
+            // Optional: allow Kokoro models without lexicon/dict (e.g., kokoro-en-v0_19).
+            try requireFileListCSV(cfg.lexiconPath, label: "lexicon")
+            try requireDirIfPresent(cfg.dataDir, label: "data")
+            try requireDirIfPresent(cfg.dictDir, label: "dict")
         case .vits:
-            try requireFile(cfg.modelPath, label: "model")
-            try requireFile(cfg.tokensPath, label: "tokens")
-            try requireFile(cfg.lexiconPath, label: "lexicon")
+            try requireFile(requireNonEmpty(cfg.modelPath, label: "model path"), label: "model")
+            try requireFile(requireNonEmpty(cfg.tokensPath, label: "tokens path"), label: "tokens")
+            try requireFileListCSV(cfg.lexiconPath, label: "lexicon")
+            try requireDirIfPresent(cfg.dataDir, label: "data")
         case .matcha:
-            try requireFile(cfg.acousticModelPath, label: "acoustic model")
-            try requireFile(cfg.vocoderPath, label: "vocoder")
-            try requireFile(cfg.tokensPath, label: "tokens")
-            try requireDir(cfg.dataDir, label: "data")
+            try requireFile(requireNonEmpty(cfg.acousticModelPath, label: "acoustic model path"), label: "acoustic model")
+            try requireFile(requireNonEmpty(cfg.vocoderPath, label: "vocoder path"), label: "vocoder")
+            try requireFile(requireNonEmpty(cfg.tokensPath, label: "tokens path"), label: "tokens")
+            try requireFileListCSV(cfg.lexiconPath, label: "lexicon")
+            try requireDirIfPresent(cfg.dataDir, label: "data")
         case .kitten:
-            try requireFile(cfg.modelPath, label: "model")
-            try requireFile(cfg.voicesPath, label: "voices")
-            try requireFile(cfg.tokensPath, label: "tokens")
-            try requireDir(cfg.dataDir, label: "data")
+            try requireFile(requireNonEmpty(cfg.modelPath, label: "model path"), label: "model")
+            try requireFile(requireNonEmpty(cfg.voicesPath, label: "voices path"), label: "voices")
+            try requireFile(requireNonEmpty(cfg.tokensPath, label: "tokens path"), label: "tokens")
+            try requireDirIfPresent(cfg.dataDir, label: "data")
         case .zipvoice:
-            try requireFile(cfg.tokensPath, label: "tokens")
-            try requireFile(cfg.encoderPath, label: "encoder")
-            try requireFile(cfg.decoderPath, label: "decoder")
-            try requireFile(cfg.vocoderPath, label: "vocoder")
+            try requireFile(requireNonEmpty(cfg.tokensPath, label: "tokens path"), label: "tokens")
+            try requireFile(requireNonEmpty(cfg.encoderPath, label: "encoder path"), label: "encoder")
+            try requireFile(requireNonEmpty(cfg.decoderPath, label: "decoder path"), label: "decoder")
+            try requireFile(requireNonEmpty(cfg.vocoderPath, label: "vocoder path"), label: "vocoder")
+            try requireDirIfPresent(cfg.dataDir, label: "data")
+            try requireFileListCSV(cfg.lexiconPath, label: "lexicon")
         }
     }
 
