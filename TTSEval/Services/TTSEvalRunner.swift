@@ -96,14 +96,21 @@ final class TTSEvalRunner {
                     let frac = Double(idx) / Double(max(1, prompts.count))
                     onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Running \(idx + 1)/\(prompts.count)"))
 
-                    let run = try await runSingle(
-                        model: model,
-                        engine: engine,
-                        promptIndex: idx,
-                        prompt: prompt,
-                        synthesisSettings: synthesisSettings
-                    )
-                    runs.append(run)
+                    do {
+                        let run = try await runSingle(
+                            model: model,
+                            engine: engine,
+                            promptIndex: idx,
+                            prompt: prompt,
+                            synthesisSettings: synthesisSettings
+                        )
+                        runs.append(run)
+                    } catch {
+                        let detail = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+                        throw TTSEvalError.synthesisFailed(
+                            "Model \(model.id) failed at prompt \(idx + 1)/\(prompts.count): \(detail)"
+                        )
+                    }
                 }
 
                 onProgress?(.init(modelId: model.id, fraction0to1: 1, message: "Done"))

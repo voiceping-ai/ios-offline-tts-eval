@@ -101,13 +101,25 @@ final class AppModel {
         let language = PromptLanguage(rawValue: langRaw) ?? .en
         let datasetRaw = (env["TTSEVAL_DATASET"] ?? "short").lowercased()
         let dataset = PromptDataset(rawValue: datasetRaw) ?? .short
+        let modelIds: Set<String> = {
+            let raw = (env["TTSEVAL_MODEL_IDS"] ?? "")
+            let ids = raw
+                .split(separator: ",")
+                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            return Set(ids)
+        }()
         let promptLimit: Int? = {
             guard let raw = env["TTSEVAL_PROMPT_LIMIT"], let n = Int(raw), n > 0 else { return nil }
             return n
         }()
+        let selectedModels: [TTSModel] = {
+            guard !modelIds.isEmpty else { return curatedModels }
+            return allModels.filter { modelIds.contains($0.id) }
+        }()
 
         resetAutorunStatusLog()
-        let header = "starting benchmark lang=\(language.rawValue) dataset=\(dataset.rawValue) promptLimit=\(promptLimit.map(String.init) ?? "nil")"
+        let header = "starting benchmark lang=\(language.rawValue) dataset=\(dataset.rawValue) promptLimit=\(promptLimit.map(String.init) ?? "nil") modelCount=\(selectedModels.count)"
         print("TTSEVAL_AUTORUN: \(header)")
         writeAutorunStatus(header, force: true)
 
@@ -118,7 +130,7 @@ final class AppModel {
 
         do {
             let export = try await runner.run(
-                models: curatedModels,
+                models: selectedModels,
                 language: language,
                 dataset: dataset,
                 synthesisSettings: synthesisSettings,

@@ -192,8 +192,20 @@ final class SherpaOnnxOfflineTTSEngine: TTSEngine {
         }
 
         let audio = wrapper.generate(text: normalized, sid: settings.sid, speed: settings.speed)
+        // Sherpa returns a null pointer on generation failure for some model/text combinations.
+        // Accessing `sampleRate`/`samples` on that wrapper traps, so guard explicitly.
+        guard audio.audio != nil else {
+            throw TTSEvalError.synthesisFailed("Sherpa returned no audio for input text")
+        }
+
         let sampleRate = Int(audio.sampleRate)
+        guard sampleRate > 0 else {
+            throw TTSEvalError.synthesisFailed("Sherpa returned invalid sample rate: \(sampleRate)")
+        }
         let samples = audio.samples
+        guard !samples.isEmpty else {
+            throw TTSEvalError.synthesisFailed("Sherpa returned empty audio")
+        }
         return TTSAudio(samples: samples, sampleRate: sampleRate, channels: 1)
     }
 
