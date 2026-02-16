@@ -2,6 +2,12 @@
 
 SwiftUI app for evaluating on-device TTS engines/models on iOS (physical devices only).
 
+### Benchmark (iPad Pro 3rd gen)
+
+![iOS TTS Overall Score](docs/ios_tts_overall_score.svg)
+![iOS TTS Tok/s](docs/ios_tts_tok_per_sec.svg)
+![iOS TTS RTF](docs/ios_tts_rtf.svg)
+
 Engines (v1.1):
 - `AVSpeechSynthesizer` (system baseline)
 - `SherpaOnnxKit` Offline TTS (ONNX Runtime, CPU) with curated presets (Kokoro, VITS, Matcha+Vocos, Kitten)
@@ -87,9 +93,6 @@ python3 scripts/generate-benchmark-report.py --update-readme
 - Dataset: `en_all`
 - Started: `2026-02-16T03:13:52Z`
 
-![iOS TTS Overall Score](docs/ios_tts_overall_score.svg)
-![iOS TTS Tok/s](docs/ios_tts_tok_per_sec.svg)
-![iOS TTS RTF](docs/ios_tts_rtf.svg)
 ![iOS TTS CPU Avg](docs/ios_tts_cpu_avg.svg)
 ![iOS TTS Mem Max](docs/ios_tts_mem_max.svg)
 
