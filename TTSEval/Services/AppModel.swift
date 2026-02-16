@@ -33,6 +33,7 @@ final class AppModel {
     private(set) var modelStatus: [String: ModelStatus] = [:]
 
     // Benchmark
+    var benchmarkLanguage: PromptLanguage = .en
     var benchmarkDataset: PromptDataset = .short
     var benchmarkSelectedModelIds: Set<String> = []
     var benchmarkRunning: Bool = false
@@ -95,6 +96,8 @@ final class AppModel {
     }
 
     private func runAutorunBenchmark(env: [String: String]) async {
+        let langRaw = (env["TTSEVAL_LANG"] ?? "en").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let language = PromptLanguage(rawValue: langRaw) ?? .en
         let datasetRaw = (env["TTSEVAL_DATASET"] ?? "short").lowercased()
         let dataset = PromptDataset(rawValue: datasetRaw) ?? .short
         let promptLimit: Int? = {
@@ -103,7 +106,7 @@ final class AppModel {
         }()
 
         resetAutorunStatusLog()
-        let header = "starting benchmark dataset=\(dataset.rawValue) promptLimit=\(promptLimit.map(String.init) ?? "nil")"
+        let header = "starting benchmark lang=\(language.rawValue) dataset=\(dataset.rawValue) promptLimit=\(promptLimit.map(String.init) ?? "nil")"
         print("TTSEVAL_AUTORUN: \(header)")
         writeAutorunStatus(header, force: true)
 
@@ -115,6 +118,7 @@ final class AppModel {
         do {
             let export = try await runner.run(
                 models: curatedModels,
+                language: language,
                 dataset: dataset,
                 synthesisSettings: synthesisSettings,
                 promptLimit: promptLimit
@@ -406,6 +410,7 @@ final class AppModel {
             do {
                 let export = try await self.runner.run(
                     models: selected,
+                    language: self.benchmarkLanguage,
                     dataset: self.benchmarkDataset,
                     synthesisSettings: self.synthesisSettings
                 ) { update in

@@ -7,6 +7,13 @@ struct BenchmarkView: View {
     var body: some View {
         Form {
             Section("Dataset") {
+                Picker("Language", selection: Bindable(app).benchmarkLanguage) {
+                    ForEach(PromptLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .pickerStyle(.segmented)
+
                 Picker("Prompts", selection: Bindable(app).benchmarkDataset) {
                     ForEach(PromptDataset.allCases) { ds in
                         Text(ds.displayName).tag(ds)

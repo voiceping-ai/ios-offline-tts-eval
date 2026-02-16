@@ -26,6 +26,7 @@ fi
 XCODE_DESTINATION="${IOS_XCODEBUILD_DESTINATION:-platform=iOS,id=${IOS_DEVICE_UDID}}"
 
 DATASET="${TTSEVAL_DATASET:-short}"   # short|medium|long|all
+LANG="${TTSEVAL_LANG:-en}"           # en|zh|ja|ko
 PROMPT_LIMIT="${TTSEVAL_PROMPT_LIMIT:-1}" # 1 for smoke; set 0 to disable limit
 TIMEOUT_S="${TTSEVAL_TIMEOUT_S:-7200}" # 2 hours
 POLL_S="${TTSEVAL_POLL_S:-10}"
@@ -88,7 +89,7 @@ echo "Launching autorun benchmark (dataset=$DATASET, promptLimit=$PROMPT_LIMIT).
 LAUNCH_JSON="$(mktemp)"
 trap 'rm -f "$LAUNCH_JSON"' EXIT
 
-ENV_JSON="{\"TTSEVAL_AUTORUN\":\"benchmark\",\"TTSEVAL_DATASET\":\"${DATASET}\",\"TTSEVAL_PROMPT_LIMIT\":\"${PROMPT_LIMIT}\"}"
+ENV_JSON="{\"TTSEVAL_AUTORUN\":\"benchmark\",\"TTSEVAL_LANG\":\"${LANG}\",\"TTSEVAL_DATASET\":\"${DATASET}\",\"TTSEVAL_PROMPT_LIMIT\":\"${PROMPT_LIMIT}\"}"
 
 if ! xcrun devicectl device process launch \
   -d "$IOS_COREDEVICE_ID" \

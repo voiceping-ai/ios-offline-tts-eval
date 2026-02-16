@@ -12,6 +12,7 @@ final class TTSEvalRunner {
 
     func run(
         models: [TTSModel],
+        language: PromptLanguage,
         dataset: PromptDataset,
         synthesisSettings: TTSSynthesisSettings,
         promptLimit: Int? = nil,
@@ -21,8 +22,8 @@ final class TTSEvalRunner {
 
         let startedAt = Date()
         let device = DeviceInfo.current()
-        let promptSets = try PromptCatalog.load()
-        let allPrompts = PromptCatalog.prompts(for: dataset, sets: promptSets)
+        let promptSetsByLang = try PromptCatalog.load()
+        let allPrompts = try PromptCatalog.prompts(for: language, dataset: dataset, setsByLanguage: promptSetsByLang)
         let prompts: [String] = {
             guard let promptLimit, promptLimit > 0 else { return allPrompts }
             return Array(allPrompts.prefix(promptLimit))
@@ -107,7 +108,7 @@ final class TTSEvalRunner {
         return BenchmarkExport(
             schemaVersion: 1,
             startedAtISO8601: ISO8601DateFormatter().string(from: startedAt),
-            dataset: dataset.rawValue,
+            dataset: "\(language.rawValue)_\(dataset.rawValue)",
             device: device,
             runs: runs,
             summaries: summaries

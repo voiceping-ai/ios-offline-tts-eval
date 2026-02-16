@@ -1,20 +1,83 @@
 {
-  "short": [
-    "Hello. This is a quick TTS test.",
-    "The price is $19.99.",
-    "I can speak offline, on device.",
-    "In 2026, on-device AI is everywhere."
-  ],
-  "medium": [
-    "Today is Sunday. The meeting starts at 9:30 a.m., not 9:00. Please be on time.",
-    "Dr. Smith said: 'Measure latency, memory, and stability.' Then we ran three benchmarks.",
-    "For iOS performance testing, avoid the simulator. Use physical devices for reliable results.",
-    "A short list: one, two, three. A longer list: four, five, six, seven, eight."
-  ],
-  "long": [
-    "This is a longer paragraph to evaluate text to speech prosody, pacing, and clarity. It includes numbers like 1,234 and 56.78, abbreviations such as e.g. and i.e., and a question: can the voice stay natural throughout the sentence?",
-    "When benchmarking an offline TTS model, we care about real time factor, CPU usage, memory footprint, and tokens per second. We also care about stability: no crashes, no glitches, and consistent output across runs.",
-    "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Sphinx of black quartz, judge my vow. These classic pangrams stress different phoneme combinations.",
-    "A final stress test mixes punctuation, quotes, and dashes: 'Wait,' she said, 'are you sure?' He replied, 'Yes... but let's verify.' After that, they compared results and exported a CSV."
-  ]
+  "en": {
+    "short": [
+      "Hello. This is a quick offline TTS test.",
+      "The price is $19.99.",
+      "On-device speech synthesis, no network required.",
+      "In 2026, low-latency AI runs on your phone."
+    ],
+    "medium": [
+      "The meeting starts at 9:30 a.m., not 9:00. Please be on time.",
+      "Dr. Smith said: 'Measure latency, memory, and stability.' Then we ran three benchmarks.",
+      "For performance testing, avoid the simulator; use physical devices for reliable audio timing.",
+      "A short list: one, two, three. A longer list: four, five, six, seven, eight."
+    ],
+    "long": [
+      "This longer paragraph evaluates prosody, pacing, and clarity. It includes numbers like 1,234 and 56.78, abbreviations such as e.g. and i.e., and a question: can the voice stay natural throughout the sentence?",
+      "When benchmarking an offline TTS model, we care about real time factor, CPU usage, memory footprint, and tokens per second. We also care about stability: no crashes, no glitches, and consistent output across runs.",
+      "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Sphinx of black quartz, judge my vow. These pangrams stress different phoneme combinations.",
+      "A final stress test mixes punctuation, quotes, and ellipses: 'Wait,' she said, 'are you sure?' He replied, 'Yes... but let's verify.' After that, they compared results and exported a CSV."
+    ]
+  },
+  "zh": {
+    "short": [
+      "你好，这是离线语音合成测试。",
+      "价格是 19.99 美元。",
+      "请在本地生成语音，不要联网。",
+      "2026 年，端侧 AI 变得很常见。"
+    ],
+    "medium": [
+      "会议时间是上午 9:30，不是 9:00，请准时到场。",
+      "张医生说：“要测延迟、内存和稳定性。”然后我们跑了三次基准测试。",
+      "为了得到可靠的音频性能数据，请使用真机，不要使用模拟器。",
+      "混合测试：英文缩写 e.g. / i.e.，以及中文标点、引号和括号（例如：3.14）。"
+    ],
+    "long": [
+      "这是一段较长的文本，用来观察语速、停顿和情感是否自然。它包含数字 1,234、56.78，以及时间 2026-02-16 09:30，还包含问句：你能一直保持清晰吗？",
+      "离线 TTS 基准测试通常关注实时因子（RTF）、CPU 占用、内存峰值，以及每秒词数或字符数。还要检查稳定性：不能崩溃，不能卡顿，输出要一致。",
+      "快速棕色狐狸跳过了懒狗。装满我的盒子，放入五打酒壶。这些句子用来覆盖不同的发音组合，检查清晰度与连贯性。",
+      "最后一段混合中英：'请确认', she said, '再跑一次 benchmark。' 然后把结果导出为 CSV 和 JSON。"
+    ]
+  },
+  "ja": {
+    "short": [
+      "こんにちは。これはオフライン TTS のテストです。",
+      "価格は 19.99 ドルです。",
+      "端末上で音声を生成します。ネットワークは不要です。",
+      "2026 年、オンデバイス AI は当たり前になりました。"
+    ],
+    "medium": [
+      "会議は午前 9:30 に開始します。9:00 ではありません。",
+      "山田先生は「遅延、メモリ、安定性を測れ」と言いました。その後、3 回ベンチマークを実行しました。",
+      "音声の性能評価では、シミュレータではなく実機を使ってください。",
+      "混合テスト: English words like token/sec and RTF, そして日本語の句読点。"
+    ],
+    "long": [
+      "これは長文テストです。数字 1,234 や 56.78、日付 2026-02-16、略語 e.g. / i.e. を含みます。声が自然に聞こえるか確認します。",
+      "オフライン TTS を評価するときは、RTF、CPU 使用率、メモリ使用量、tokens per second を見ます。さらに、クラッシュしないことと、出力が安定していることが重要です。",
+      "早口言葉のような文を使います: 生麦生米生卵。隣の客はよく柿食う客だ。発音の多様性をチェックします。",
+      "最後のストレステストでは、引用符と省略記号を混ぜます: 「本当に大丈夫？」と彼女は聞いた。彼は「うん... たぶん」と答え、結果を CSV に保存しました。"
+    ]
+  },
+  "ko": {
+    "short": [
+      "안녕하세요. 오프라인 TTS 테스트입니다.",
+      "가격은 19.99달러입니다.",
+      "기기에서 바로 음성을 생성합니다. 인터넷이 필요 없습니다.",
+      "2026년에는 온디바이스 AI가 흔해졌습니다."
+    ],
+    "medium": [
+      "회의는 오전 9:30에 시작합니다. 9:00이 아닙니다.",
+      "김 박사는 \"지연, 메모리, 안정성을 측정하라\"고 말했습니다. 그리고 우리는 3번 벤치마크를 실행했습니다.",
+      "오디오 성능을 정확히 보려면 시뮬레이터가 아니라 실제 기기에서 테스트하세요.",
+      "혼합 테스트: English terms like RTF, tokens/sec, 그리고 한국어 문장 부호(예: 3.14)."
+    ],
+    "long": [
+      "이 문단은 길게 읽기 위한 테스트입니다. 숫자 1,234와 56.78, 날짜 2026-02-16 09:30, 약어 e.g. / i.e.를 포함합니다. 음성이 자연스럽게 이어지는지 확인합니다.",
+      "오프라인 TTS 벤치마크에서는 RTF, CPU 사용률, 메모리 피크, 그리고 tokens per second를 봅니다. 또한 크래시 없이 안정적으로 동작해야 합니다.",
+      "발음 다양성을 테스트하기 위해 문장과 문장부호를 섞습니다. \"정말 괜찮아?\" 그녀가 물었습니다... 그는 \"확인해 보자\"라고 답했습니다.",
+      "마지막으로 결과를 JSON과 CSV로 내보내고, 모델 간 점수를 비교합니다. Export 후에 그래프도 생성합니다."
+    ]
+  }
 }
+
