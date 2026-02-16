@@ -6,9 +6,20 @@ struct ModelsView: View {
 
     var body: some View {
         List {
-            Section("Curated") {
+            Section("Curated (Verified)") {
                 ForEach(app.curatedModels, id: \.id) { model in
                     ModelRow(model: model, isCustom: false)
+                }
+            }
+
+            Section("Community (Unverified)") {
+                if app.communityModels.isEmpty {
+                    Text("No community models.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(app.communityModels, id: \.id) { model in
+                        ModelRow(model: model, isCustom: false)
+                    }
                 }
             }
 
@@ -84,7 +95,7 @@ private struct ModelRow: View {
                     .buttonStyle(.bordered)
                 }
 
-                if ModelStorage.isModelDownloaded(model), !model.artifacts.isEmpty {
+                if ModelStorage.isModelDownloaded(model), (!model.artifacts.isEmpty || !model.localRequiredPaths.isEmpty) {
                     Button("Delete Files", role: .destructive) {
                         app.deleteDownloaded(modelId: model.id)
                     }

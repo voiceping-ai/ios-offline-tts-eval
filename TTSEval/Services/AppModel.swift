@@ -27,7 +27,8 @@ final class AppModel {
     var lastMetrics: TTSEvalMetrics?
 
     // Models
-    private(set) var curatedModels: [TTSModel] = TTSModelCatalog.curated
+    private(set) var curatedModels: [TTSModel] = TTSModelCatalog.curatedVerified
+    private(set) var communityModels: [TTSModel] = TTSModelCatalog.communityUnverified
     private(set) var customModels: [TTSModel] = []
     private(set) var modelStatus: [String: ModelStatus] = [:]
 
@@ -69,7 +70,7 @@ final class AppModel {
     }
 
     var allModels: [TTSModel] {
-        curatedModels + customModels
+        curatedModels + communityModels + customModels
     }
 
     func autorunIfRequested() async {

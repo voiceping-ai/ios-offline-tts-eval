@@ -28,13 +28,26 @@ enum ModelStorage {
     }
 
     static func isModelDownloaded(_ model: TTSModel) -> Bool {
-        guard !model.artifacts.isEmpty else { return true }
         do {
             let dir = try modelDirectory(modelId: model.id)
-            return model.artifacts.allSatisfy { artifact in
-                let path = dir.appendingPathComponent(artifact.destinationRelativePath)
-                return fileManager.fileExists(atPath: path.path)
+            if !model.artifacts.isEmpty {
+                return model.artifacts.allSatisfy { artifact in
+                    let path = dir.appendingPathComponent(artifact.destinationRelativePath)
+                    return fileManager.fileExists(atPath: path.path)
+                }
             }
+
+            if !model.localRequiredPaths.isEmpty {
+                return model.localRequiredPaths.allSatisfy { rel in
+                    let trimmed = rel.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return true }
+                    let path = dir.appendingPathComponent(trimmed, isDirectory: false)
+                    return fileManager.fileExists(atPath: path.path)
+                }
+            }
+
+            // System/baseline models with no download/import requirements.
+            return true
         } catch {
             return false
         }

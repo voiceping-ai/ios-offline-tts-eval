@@ -120,6 +120,9 @@ struct TTSModel: Identifiable, Codable, Hashable, Sendable {
     let estimatedSizeBytes: Int64?
     let artifacts: [TTSArtifact]
     let sherpaConfig: SherpaOfflineTTSConfig?
+    let licenseSpdx: String?
+    let licenseVerified: Bool
+    let localRequiredPaths: [String]
 
     init(
         id: String,
@@ -128,7 +131,10 @@ struct TTSModel: Identifiable, Codable, Hashable, Sendable {
         languages: [String] = [],
         estimatedSizeBytes: Int64? = nil,
         artifacts: [TTSArtifact] = [],
-        sherpaConfig: SherpaOfflineTTSConfig? = nil
+        sherpaConfig: SherpaOfflineTTSConfig? = nil,
+        licenseSpdx: String? = nil,
+        licenseVerified: Bool = false,
+        localRequiredPaths: [String] = []
     ) {
         self.id = id
         self.displayName = displayName
@@ -137,6 +143,51 @@ struct TTSModel: Identifiable, Codable, Hashable, Sendable {
         self.estimatedSizeBytes = estimatedSizeBytes
         self.artifacts = artifacts
         self.sherpaConfig = sherpaConfig
+        self.licenseSpdx = licenseSpdx
+        self.licenseVerified = licenseVerified
+        self.localRequiredPaths = localRequiredPaths
+    }
+
+    // Backward-compatible decoding for older custom_models.json.
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decode(String.self, forKey: .id)
+        self.displayName = try c.decode(String.self, forKey: .displayName)
+        self.engineId = try c.decode(String.self, forKey: .engineId)
+        self.languages = try c.decodeIfPresent([String].self, forKey: .languages) ?? []
+        self.estimatedSizeBytes = try c.decodeIfPresent(Int64.self, forKey: .estimatedSizeBytes)
+        self.artifacts = try c.decodeIfPresent([TTSArtifact].self, forKey: .artifacts) ?? []
+        self.sherpaConfig = try c.decodeIfPresent(SherpaOfflineTTSConfig.self, forKey: .sherpaConfig)
+        self.licenseSpdx = try c.decodeIfPresent(String.self, forKey: .licenseSpdx)
+        self.licenseVerified = try c.decodeIfPresent(Bool.self, forKey: .licenseVerified) ?? false
+        self.localRequiredPaths = try c.decodeIfPresent([String].self, forKey: .localRequiredPaths) ?? []
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(displayName, forKey: .displayName)
+        try c.encode(engineId, forKey: .engineId)
+        try c.encode(languages, forKey: .languages)
+        try c.encodeIfPresent(estimatedSizeBytes, forKey: .estimatedSizeBytes)
+        try c.encode(artifacts, forKey: .artifacts)
+        try c.encodeIfPresent(sherpaConfig, forKey: .sherpaConfig)
+        try c.encodeIfPresent(licenseSpdx, forKey: .licenseSpdx)
+        try c.encode(licenseVerified, forKey: .licenseVerified)
+        try c.encode(localRequiredPaths, forKey: .localRequiredPaths)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case displayName
+        case engineId
+        case languages
+        case estimatedSizeBytes
+        case artifacts
+        case sherpaConfig
+        case licenseSpdx
+        case licenseVerified
+        case localRequiredPaths
     }
 }
 
