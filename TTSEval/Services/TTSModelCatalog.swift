@@ -3,6 +3,7 @@ import Foundation
 enum TTSEngineIds {
     static let avSpeech = "native.avspeech"
     static let sherpa = "sherpa.offline"
+    static let nemo = "nemo.fastpitch_hifigan"
 }
 
 enum TTSModelCatalog {
@@ -33,6 +34,7 @@ enum TTSModelCatalog {
     static let curated: [TTSModel] = curatedVerified
 
     static let communityUnverified: [TTSModel] = [
+        nemoFastPitchHifiGanEn,
         matchaIcefallEnUsLjspeechVocos,
         kokoroInt8MultiLangV1_0,
         kittenNanoEnV0_1Fp16
@@ -322,6 +324,26 @@ enum TTSModelCatalog {
             sherpaConfig: cfg,
             licenseSpdx: nil,
             licenseVerified: false
+        )
+    }()
+
+    static let nemoFastPitchHifiGanEn: TTSModel = {
+        TTSModel(
+            id: "nemo-fastpitch-hifigan-en",
+            displayName: "NVIDIA NeMo FastPitch + HiFiGAN (EN)",
+            engineId: TTSEngineIds.nemo,
+            languages: ["en"],
+            estimatedSizeBytes: nil,
+            artifacts: [],
+            sherpaConfig: nil,
+            licenseSpdx: nil,
+            licenseVerified: false,
+            localRequiredPaths: [
+                "fastpitch.onnx",
+                "hifigan.onnx",
+                "symbols.json",
+                "config.json"
+            ]
         )
     }()
 

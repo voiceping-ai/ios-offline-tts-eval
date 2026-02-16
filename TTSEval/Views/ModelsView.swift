@@ -41,6 +41,10 @@ struct ModelsView: View {
             }
         }
         .navigationTitle("Models")
+        .task {
+            // Allow scripted local bundle pushes (e.g., NeMo) to be imported while the app is running.
+            app.importPendingBundles()
+        }
         .sheet(isPresented: $showAddCustom) {
             NavigationStack {
                 CustomModelSheet { newModel in

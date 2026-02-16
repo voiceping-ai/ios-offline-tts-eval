@@ -9,6 +9,7 @@ final class TTSEngineRegistry {
     private init() {
         register(NativeAVSpeechTTSEngine())
         register(SherpaOnnxOfflineTTSEngine())
+        register(NemoFastPitchHifiGanTTSEngine())
     }
 
     func register(_ engine: TTSEngine) {

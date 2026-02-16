@@ -66,8 +66,20 @@ struct SpeakView: View {
 
                 if let model = selectedModel {
                     if case .notDownloaded = app.status(for: model.id) {
-                        Button("Download Model") {
-                            app.downloadSelectedModel()
+                        if !model.artifacts.isEmpty {
+                            Button("Download Model") {
+                                app.downloadSelectedModel()
+                            }
+                        } else if !model.localRequiredPaths.isEmpty {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("This model must be imported locally (not downloaded).")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Button("Scan Imports") {
+                                    app.importPendingBundles()
+                                }
+                                .buttonStyle(.bordered)
+                            }
                         }
                     }
                 }
@@ -130,8 +142,14 @@ struct SpeakView: View {
                 Text(msg)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Button("Retry Download") {
-                    app.downloadSelectedModel()
+                if !model.artifacts.isEmpty {
+                    Button("Retry Download") {
+                        app.downloadSelectedModel()
+                    }
+                } else if !model.localRequiredPaths.isEmpty {
+                    Button("Scan Imports") {
+                        app.importPendingBundles()
+                    }
                 }
             }
         case .unknown:

@@ -61,6 +61,7 @@ final class AppModel {
             self?.isSpeaking = playing
         }
         loadCustomModels()
+        importPendingBundlesBestEffort()
         refreshStatuses()
         loadLastBenchmarkExport()
 
@@ -214,6 +215,24 @@ final class AppModel {
         modelStatus = next
     }
 
+    func importPendingBundles() {
+        importPendingBundlesBestEffort()
+        refreshStatuses()
+    }
+
+    private func importPendingBundlesBestEffort() {
+        do {
+            let imported = try ModelStorage.importPendingBundlesFromDocuments()
+            if !imported.isEmpty {
+                print("Imported model bundles: \(imported.joined(separator: ", "))")
+            }
+        } catch {
+            // Best effort. We don't want launch to fail because import scanning failed.
+            let msg = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+            print("Model import scan failed: \(msg)")
+        }
+    }
+
     // MARK: - Speak
 
     func speak() {
@@ -352,6 +371,9 @@ final class AppModel {
             return
         }
         guard !model.artifacts.isEmpty else {
+            if !model.localRequiredPaths.isEmpty {
+                throw TTSEvalError.modelNotDownloaded("Model \(model.displayName) must be imported locally (not downloaded)")
+            }
             throw TTSEvalError.modelNotDownloaded("Model \(model.displayName) has no downloadable artifacts")
         }
 

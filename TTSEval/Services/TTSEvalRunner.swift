@@ -39,16 +39,22 @@ final class TTSEvalRunner {
             onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Checking model files..."))
 
             if !ModelStorage.isModelDownloaded(model) {
-                guard !model.artifacts.isEmpty else {
-                    // Non-downloadable model.
-                    throw TTSEvalError.modelNotDownloaded("Model \(model.displayName) is not downloaded")
+                if !model.artifacts.isEmpty {
+                    onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Downloading..."))
+                    let downloader = HuggingFaceDownloader()
+                    downloader.onProgress = { frac in
+                        onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Downloading..."))
+                    }
+                    try await downloader.downloadArtifacts(modelId: model.id, artifacts: model.artifacts)
+                } else if !model.localRequiredPaths.isEmpty {
+                    let missing = model.localRequiredPaths.joined(separator: ", ")
+                    throw TTSEvalError.modelNotDownloaded(
+                        "Model \(model.displayName) requires local import. Missing files: \(missing)."
+                    )
+                } else {
+                    // System/baseline models should always be ready.
+                    throw TTSEvalError.modelNotDownloaded("Model \(model.displayName) is not ready")
                 }
-                onProgress?(.init(modelId: model.id, fraction0to1: 0, message: "Downloading..."))
-                let downloader = HuggingFaceDownloader()
-                downloader.onProgress = { frac in
-                    onProgress?(.init(modelId: model.id, fraction0to1: frac, message: "Downloading..."))
-                }
-                try await downloader.downloadArtifacts(modelId: model.id, artifacts: model.artifacts)
             }
 
             guard let engine = engineRegistry.engine(for: model.engineId) else {

@@ -20,6 +20,10 @@ TTSEval.xcodeproj/xcshareddata/
 # Benchmark exports pulled from device (can be large/noisy)
 device-exports/
 
+# Local NeMo export artifacts (large) + python venv
+artifacts/
+scripts/nemo/.venv-nemo/
+
 # Python
 __pycache__/
 *.pyc

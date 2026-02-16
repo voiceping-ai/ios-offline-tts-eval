@@ -16,6 +16,11 @@ enum ModelStorage {
         appSupportRoot.appendingPathComponent("custom_models.json", isDirectory: false)
     }
 
+    static var documentsImportsRoot: URL {
+        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return docs.appendingPathComponent("TTSEvalImports", isDirectory: true)
+    }
+
     static func ensureDirectories() throws {
         try fileManager.createDirectory(at: modelsRoot, withIntermediateDirectories: true)
     }
@@ -63,6 +68,64 @@ enum ModelStorage {
         if fileManager.fileExists(atPath: dir.path) {
             try fileManager.removeItem(at: dir)
         }
+    }
+
+    /// Import bundles pushed into `Documents/TTSEvalImports/<modelId>/...` (e.g., via `devicectl device copy to`).
+    ///
+    /// This allows host scripts to push large local bundles (like NeMo ONNX weights) into the app container without
+    /// enabling file sharing or redistributing weights.
+    ///
+    /// Returns imported model IDs.
+    static func importPendingBundlesFromDocuments() throws -> [String] {
+        let root = documentsImportsRoot
+        var isDir: ObjCBool = false
+        guard fileManager.fileExists(atPath: root.path, isDirectory: &isDir), isDir.boolValue else {
+            return []
+        }
+
+        let modelDirs = try fileManager.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ).filter { url in
+            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+        }
+
+        var imported: [String] = []
+        imported.reserveCapacity(modelDirs.count)
+
+        for importDir in modelDirs {
+            let modelId = importDir.lastPathComponent
+            guard !modelId.isEmpty else { continue }
+
+            let destDir = try modelDirectory(modelId: modelId)
+            let items = try fileManager.contentsOfDirectory(at: importDir, includingPropertiesForKeys: nil, options: [])
+
+            for src in items {
+                let dst = destDir.appendingPathComponent(src.lastPathComponent, isDirectory: false)
+                if fileManager.fileExists(atPath: dst.path) {
+                    try? fileManager.removeItem(at: dst)
+                }
+                do {
+                    try fileManager.moveItem(at: src, to: dst)
+                } catch {
+                    // Cross-volume moves can fail; fall back to copy+delete.
+                    try fileManager.copyItem(at: src, to: dst)
+                    try? fileManager.removeItem(at: src)
+                }
+            }
+
+            // Best-effort cleanup.
+            try? fileManager.removeItem(at: importDir)
+            imported.append(modelId)
+        }
+
+        // Remove the root if it's now empty.
+        if (try? fileManager.contentsOfDirectory(atPath: root.path).isEmpty) == true {
+            try? fileManager.removeItem(at: root)
+        }
+
+        return imported
     }
 
     static func downloadedSizeBytes(modelId: String) -> Int64 {

@@ -34,3 +34,4 @@ Examples:
 
 AVSpeechSynthesizer uses iOS system voices and does not download model files.
 
+NeMo FastPitch + HiFiGAN models are imported locally by the user (no weights are redistributed).

@@ -34,6 +34,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.voiceping.ttseval
         CODE_SIGN_STYLE: Automatic
+        SWIFT_OBJC_BRIDGING_HEADER: TTSEval/TTSEval-Bridging-Header.h
+        HEADER_SEARCH_PATHS:
+          - $(SRCROOT)/../ios-android-offline-speech-translation/LocalPackages/SherpaOnnxKit/onnxruntime.xcframework/Headers
         GENERATE_INFOPLIST_FILE: "YES"
         CURRENT_PROJECT_VERSION: "1"
         MARKETING_VERSION: "1.0.0"

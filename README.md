@@ -2,9 +2,10 @@
 
 SwiftUI app for evaluating on-device TTS engines/models on iOS (physical devices only).
 
-Engines (v1):
+Engines (v1.1):
 - `AVSpeechSynthesizer` (system baseline)
 - `SherpaOnnxKit` Offline TTS (ONNX Runtime, CPU) with curated presets (Kokoro, VITS, Matcha+Vocos, Kitten)
+- `ONNX Runtime` (CPU) NeMo FastPitch + HiFiGAN (local bundle import; no weights redistributed)
 
 No iOS Simulators are used or required.
 
@@ -35,6 +36,26 @@ xcodegen generate
 ```bash
 IOS_COREDEVICE_ID=<CoreDevice ID> IOS_DEVICE_UDID=<UDID> ./scripts/install-device.sh
 ```
+
+## NeMo (Local Bundle Import)
+
+NeMo ONNX weights are **not** downloaded by the app (and are not redistributed by this repo). Instead, export/pick a local bundle directory containing:
+
+- `fastpitch.onnx`
+- `hifigan.onnx`
+- `symbols.json`
+- `config.json`
+
+Then push it into the app container and import on-device:
+
+```bash
+IOS_COREDEVICE_ID=<CoreDevice ID> IOS_DEVICE_UDID=<UDID> \
+  MODEL_ID=nemo-fastpitch-hifigan-en \
+  BUNDLE_DIR=/path/to/your/nemo-bundle-dir \
+  ./scripts/nemo/push_bundle_to_device.sh
+```
+
+Open the app and visit **Models** to import.
 
 Find connected devices:
 
