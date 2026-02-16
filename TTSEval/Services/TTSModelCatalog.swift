@@ -94,10 +94,10 @@ enum TTSModelCatalog {
         cfg.voicesPath = "voices.bin"
         cfg.tokensPath = "tokens.txt"
         cfg.lexiconPath = "lexicon-us-en.txt,lexicon-zh.txt"
-        cfg.ruleFsts = ["date-zh.fst", "number-zh.fst", "phone-zh.fst"]
-        cfg.dictDir = "dict"
+        // Keep the default preset broadly compatible across prompts.
+        // Rule FSTs can be added in Custom Model for targeted ZH normalization.
+        cfg.ruleFsts = []
         cfg.dataDir = "espeak-ng-data"
-        cfg.lang = "en-us"
         cfg.lengthScale = 1.0
 
         return TTSModel(
@@ -242,7 +242,8 @@ enum TTSModelCatalog {
         cfg.modelPath = "model.int8.onnx"
         cfg.tokensPath = "tokens.txt"
         cfg.lexiconPath = "lexicon.txt"
-        cfg.ruleFsts = ["date.fst", "number.fst", "phone.fst", "new_heteronym.fst"]
+        // Keep optional normalization FSTs out of the default path for maximum compatibility.
+        cfg.ruleFsts = []
         cfg.noiseScale = 0.667
         cfg.noiseScaleW = 0.8
         cfg.lengthScale = 1.0
